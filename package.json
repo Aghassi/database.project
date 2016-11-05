@@ -1,0 +1,11 @@
+{
+  "name": "eecs341",
+  "version": "1.0.0",
+  "description": "Contents of a basic calendar app for EECS 341 fall 2016",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
