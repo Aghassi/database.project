@@ -5,7 +5,7 @@ module.exports = {
         'user': 'root',
         'password': 'databaseproject'
     },
-	'database': 'mysql_test_db',
+	'database': 'eecs341',
     'users_table': 'users',
     'managers_table': 'managers',
     'events_table': 'events',
