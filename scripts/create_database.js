@@ -3,8 +3,7 @@ var dbconfig = require('../config/database');
 
 var connection = mysql.createConnection(dbconfig.connection);
 
-connection.query('CREATE SCHEMA IF NOT EXISTS ' + dbconfig.database + ' DEFAULT CHARACTER SET utf8' + 'USE ' + dbconfig.database;
-);
+connection.query('CREATE SCHEMA IF NOT EXISTS ' + dbconfig.database);
 
 connection.query('\
 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.users_table + '` ( \
@@ -17,9 +16,8 @@ CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.users_table + '` ( \
   PRIMARY KEY (`user_id`), \
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) \
 )');
-
 connection.query('\
-CREATE TABLE IF NOT EXISTS' + dbconfig.managers_table '` ( \
+CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.managers_table + '` ( \
   `dept` NVARCHAR(20) NOT NULL, \
   `user_id` INT NOT NULL, \
   PRIMARY KEY (`user_id`), \

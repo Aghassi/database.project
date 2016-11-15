@@ -31,14 +31,5 @@ app.use(bodyParser.json());
 // routes ======================================================================
 require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
 
-// launch ======================================================================
-connection.connect(function(err){
-  if(!err) {
-    console.log("Database is connected ... \n\n");
-  } else {
-    console.log("Error connecting database ... \n\n");
-  }
-});
-
 app.listen(port);
 console.log('The magic happens on port ' + port);
