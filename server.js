@@ -3,8 +3,8 @@ var mysql      = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : '',
-  database : ''
+  password : 'databaseproject',
+  database : 'eecs341'
 });
 var app = express();
 
