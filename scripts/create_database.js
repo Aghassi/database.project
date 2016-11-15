@@ -62,6 +62,35 @@ CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.manages_table + '` ( \
     ON UPDATE CASCADE) \
 )');
 
+// Schedules
+connection.query('\
+CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.schedules_table + '` ( \
+  `event_id` INT NOT NULL, \
+  `employee_id` INT NULL, \
+  PRIMARY KEY (`event_id`), \
+  INDEX `user_id_idx` (`employee_id` ASC), \
+  CONSTRAINT `employee_id` \
+    FOREIGN KEY (`employee_id`) \
+    REFERENCES `eecs341`.`users` (`user_id`) \
+    ON DELETE NO ACTION \
+    ON UPDATE NO ACTION) \
+)');
+
+// Invites
+connection.query('\
+CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.invites_table + '` ( \
+  `event_id` INT NOT NULL, \
+  `employee` INT NULL, \
+  `status` CHAR(1) NULL, \
+  PRIMARY KEY (`event_id`), \
+  INDEX `user_id_idx` (`employee` ASC), \
+  CONSTRAINT `employee` \
+    FOREIGN KEY (`employee`) \
+    REFERENCES `eecs341`.`users` (`user_id`) \
+    ON DELETE CASCADE \
+    ON UPDATE CASCADE) \
+)');
+
 console.log('Success: Database Created!')
 
 connection.end();

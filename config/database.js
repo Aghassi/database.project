@@ -9,5 +9,7 @@ module.exports = {
     'users_table': 'users',
     'managers_table': 'managers',
     'events_table': 'events',
-    'manages_table': 'manages'
+    'manages_table': 'manages',
+    'schedules_table': 'schedules',
+    'invites_table': 'invites'
 };
