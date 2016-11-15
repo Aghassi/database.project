@@ -7,7 +7,7 @@ var dbconfig = require('../config/database');
 
 var connection = mysql.createConnection(dbconfig.connection);
 
-connection.query('CREATE SCHEME IF NOT EXISTS ' + dbconfig.database);
+connection.query('CREATE DATABASE IF NOT EXISTS ' + dbconfig.database);
 
 /** Tables **/
 
