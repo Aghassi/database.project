@@ -21,12 +21,12 @@ module.exports = function(passport) {
 
     // used to serialize the user for the session
     passport.serializeUser(function(user, done) {
-        done(null, user.id);
+        done(null, user.user_id);
     });
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        connection.query("SELECT * FROM users WHERE id = ? ",[id], function(err, rows){
+        connection.query("SELECT * FROM users WHERE user_id = ? ",[id], function(err, rows){
             done(err, rows[0]);
         });
     });
@@ -64,6 +64,7 @@ module.exports = function(passport) {
                     var insertQuery = "INSERT INTO users ( username, password ) values (?,?)";
 
                     connection.query(insertQuery,[newUserMysql.username, newUserMysql.password],function(err, rows) {
+                        if (err) throw err;
                         newUserMysql.id = rows.insertId;
 
                         return done(null, newUserMysql);

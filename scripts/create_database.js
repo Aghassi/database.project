@@ -19,8 +19,9 @@ CREATE TABLE IF NOT EXISTS`' + dbconfig.database + '`.`' + dbconfig.users_table 
   `title` NVARCHAR(20) NULL, \
   `dept` NVARCHAR(20) NULL, \
   `username` NVARCHAR(45) NULL, \
-  `password` NVARCHAR(20) NULL, \
+  `password` NVARCHAR(60) NULL, \
       PRIMARY KEY (`user_id`), \
+  UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC), \
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) \
 )');
 
