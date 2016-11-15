@@ -7,5 +7,7 @@ module.exports = {
     },
 	'database': 'mysql_test_db',
     'users_table': 'users',
-    'managers_table': 'managers'
+    'managers_table': 'managers',
+    'events_table': 'events',
+    'manages_table': 'manages'
 };
