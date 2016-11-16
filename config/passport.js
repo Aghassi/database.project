@@ -22,7 +22,12 @@ module.exports = function(passport) {
     // used to serialize the user for the session
     passport.serializeUser(function(user, done) {
         console.log(user);
-        done(null, user.user_id);
+        if(user.id === undefined){
+            done(null, user.user_id);
+        }
+        else{
+            done(null, user.id);
+        }
     });
 
     // used to deserialize the user
