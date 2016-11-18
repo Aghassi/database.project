@@ -106,6 +106,11 @@ module.exports = function(app, passport) {
 					user: req.user,
 					results : results
 				});
+			} else {
+				res.render('calendar.ejs', {
+					user: req.user,
+					results : []
+				});
 			}
 		});
 	});
