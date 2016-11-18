@@ -1,6 +1,6 @@
 // app/routes.js
 module.exports = function(app, passport) {
-	
+
 	var mysql = require('mysql');
 	var dbconfig = require('../config/database.js');
 	var connection = mysql.createConnection(dbconfig.connection);
@@ -25,20 +25,20 @@ module.exports = function(app, passport) {
 
 	// process the login form
 	app.post('/login', passport.authenticate('local-login', {
-            successRedirect : '/profile', // redirect to the secure profile section
-            failureRedirect : '/login', // redirect back to the signup page if there is an error
-            failureFlash : true // allow flash messages
-		}),
-        function(req, res) {
-            console.log("hello");
+		successRedirect : '/profile', // redirect to the secure profile section
+		failureRedirect : '/login', // redirect back to the signup page if there is an error
+		failureFlash : true // allow flash messages
+	}),
+	function(req, res) {
+		console.log("hello");
 
-            if (req.body.remember) {
-              req.session.cookie.maxAge = 1000 * 60 * 3;
-            } else {
-              req.session.cookie.expires = false;
-            }
-        res.redirect('/');
-    });
+		if (req.body.remember) {
+			req.session.cookie.maxAge = 1000 * 60 * 3;
+		} else {
+			req.session.cookie.expires = false;
+		}
+		res.redirect('/');
+	});
 
 	// =====================================
 	// SIGNUP ==============================
@@ -74,68 +74,68 @@ module.exports = function(app, passport) {
 		req.logout();
 		res.redirect('/');
 	});
-	
+
 	// =====================================
 	// CALENDAR ============================
 	// =====================================
 	app.get('/calendar', isLoggedIn, function (req, res) {
-		
+
 		// populates a user's calendar with their events
 		connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE creator=?", [req.user.user_id], function(err, rows) {
-			
+
 			if (err)
-                return console.log(err);
-            if (rows.length) {
-            	var results = [];
-            	for(var i = 0 ; i < rows.length ; i++){
-            		// create event object
-            		// insert into results
-            		// set events below to results
-            		var event = {
-            			id : rows[i].event_id,
-            			title : rows[i].event_id,
-            			start : rows[i].start_time,
-            			end : rows[i].end_time,
-            			description : rows[i].description,
-            			created_date : rows[i].created_date
-            		}
-            		results.push(event);
-            	}
-            
-	            res.render('calendar.ejs', {
+			return console.log(err);
+			if (rows.length) {
+				var results = [];
+				for(var i = 0 ; i < rows.length ; i++){
+					// create event object
+					// insert into results
+					// set events below to results
+					var event = {
+						id : rows[i].event_id,
+						title : rows[i].event_id,
+						start : rows[i].start_time,
+						end : rows[i].end_time,
+						description : rows[i].description,
+						created_date : rows[i].created_date
+					};
+					results.push(event);
+				}
+
+				res.render('calendar.ejs', {
 					user: req.user,
 					results : results
 				});
-            }
+			}
 		});
 	});
-	
+
 	app.get('/calendar/add', isLoggedIn, function(req, res){
-		res.render('calendar-add.ejs');	
+		res.render('calendar-add.ejs');
 	});
-	
+
 	app.post('/calendar/add', isLoggedIn, function(req, res){
-		
+
 		console.log(req.body.start_time);
 		console.log(req.body.end_time);
-		
+
 		// adds an event to a user's calendar
 		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, description, created_date) \
-						  VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format(), moment(req.body.end_time).format(),
-						  req.body.description, moment().format()], function(err, result){
-			if (err)
-                return console.log(err);
-            else{
-            	console.log('Added!');
-            }
+		VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format(), moment(req.body.end_time).format(),
+			req.body.description, moment().format()], function(err, result){
+				if (err)
+				return console.log(err);
+				else{
+					console.log('Added!');
+				}
+			});
+
+			res.redirect('/calendar')
 		});
-		
-		res.redirect('/calendar')
-	});
-	
-	/* Template
-	app.get('', function(req, res) {
-		
+
+		/* Template
+		app.get('', function(req, res) {
+
 	});
 	*/
 };
@@ -145,8 +145,8 @@ function isLoggedIn(req, res, next) {
 
 	// if user is authenticated in the session, carry on
 	if (req.isAuthenticated())
-		return next();
+	return next();
 
 	// if they aren't redirect them to the home page
 	res.redirect('/');
-}
+};
