@@ -9,13 +9,45 @@
     <script src='/js/jquery.min.js'></script>
     <script src='/js/moment.js'></script>
     <script src='/js/fullcalendar.min.js'></script>
+    <script src='/js/bootstrap.min.js'></script>
+    <script src='/js/bootbox.min.js'></script>
     <script>
         $(document).ready(function() {
     
         // page is now ready, initialize the calendar...
         
         $('#calendar').fullCalendar({
-                events : { events : <%- JSON.stringify(results) %> }
+                events : { events : <%- JSON.stringify(results) %> },
+                eventClick: function(calEvent, jsEvent, view) {
+                    // show event data modal
+                    bootbox.confirm({
+                        title: calEvent.title,
+                        message: '<p><strong>Start Date:</strong> ' + moment(calEvent.start).format('MMMM Do YYYY, h:mm a') + '</p>' +
+                                 '<p><strong>End Date:</strong> ' + moment(calEvent.end).format('MMMM Do YYYY, h:mm a') + '</p>'  +
+                                 '<br>' +
+                                 '<p>' + calEvent.description + '</p>',
+                        buttons: {
+                            confirm: {
+                                label: 'Edit',
+                                className: 'btn-default'
+                            },
+                            cancel: {
+                                label: 'Close',
+                                className: 'btn-default'
+                            }
+                        },
+                        callback: function (result) {
+                            if(result){
+                                console.log('Edit');
+                                // open edit modal
+                                // TODO
+                            }
+                            else{
+                                // closes this modal
+                            }
+                        }
+                    });
+                }
         });
         
     }); 
