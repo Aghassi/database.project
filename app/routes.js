@@ -1,5 +1,10 @@
 // app/routes.js
 module.exports = function(app, passport) {
+	
+	var mysql = require('mysql');
+	var dbconfig = require('../config/database.js');
+	var connection = mysql.createConnection(dbconfig.connection);
+	var moment = require('moment');
 
 	// =====================================
 	// HOME PAGE (with login links) ========
@@ -52,7 +57,7 @@ module.exports = function(app, passport) {
 	}));
 
 	// =====================================
-	// PROFILE SECTION =========================
+	// PROFILE SECTION =====================
 	// =====================================
 	// we will want this protected so you have to be logged in to visit
 	// we will use route middleware to verify this (the isLoggedIn function)
@@ -69,6 +74,70 @@ module.exports = function(app, passport) {
 		req.logout();
 		res.redirect('/');
 	});
+	
+	// =====================================
+	// CALENDAR ============================
+	// =====================================
+	app.get('/calendar', isLoggedIn, function (req, res) {
+		
+		// populates a user's calendar with their events
+		connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE creator=?", [req.user.user_id], function(err, rows) {
+			
+			if (err)
+                return console.log(err);
+            if (rows.length) {
+            	var results = [];
+            	for(var i = 0 ; i < rows.length ; i++){
+            		// create event object
+            		// insert into results
+            		// set events below to results
+            		var event = {
+            			id : rows[i].event_id,
+            			title : rows[i].event_id,
+            			start : rows[i].start_time,
+            			end : rows[i].end_time,
+            			description : rows[i].description,
+            			created_date : rows[i].created_date
+            		}
+            		results.push(event);
+            	}
+            
+	            res.render('calendar.ejs', {
+					user: req.user,
+					results : results
+				});
+            }
+		});
+	});
+	
+	app.get('/calendar/add', isLoggedIn, function(req, res){
+		res.render('calendar-add.ejs');	
+	});
+	
+	app.post('/calendar/add', isLoggedIn, function(req, res){
+		
+		console.log(req.body.start_time);
+		console.log(req.body.end_time);
+		
+		// adds an event to a user's calendar
+		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, description, created_date) \
+						  VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format(), moment(req.body.end_time).format(),
+						  req.body.description, moment().format()], function(err, result){
+			if (err)
+                return console.log(err);
+            else{
+            	console.log('Added!');
+            }
+		});
+		
+		res.redirect('/calendar')
+	});
+	
+	/* Template
+	app.get('', function(req, res) {
+		
+	});
+	*/
 };
 
 // route middleware to make sure

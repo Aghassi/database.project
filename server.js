@@ -12,12 +12,13 @@ var port     = process.env.PORT || 8080;
 
 var passport = require('passport');
 var flash    = require('connect-flash');
+var path = require('path');
+var bodyParser = require('body-parser')
 
 // configuration ===============================================================
 // connect to our database
 
 require('./config/passport')(passport); // pass passport for configuration
-
 
 
 // set up our express application
@@ -39,6 +40,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(express.static(path.join(__dirname, 'public'))); // serve static files
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
 
 
 // routes ======================================================================

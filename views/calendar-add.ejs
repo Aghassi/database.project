@@ -1,0 +1,33 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>EECS 341 Authentication Calendar</title>
+	<!-- bootstrap CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+		body 		{ padding-top:80px; word-wrap:break-word; }
+	</style>
+	<!-- datetime Picker -->
+	<link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/flatpickr"></script>
+
+</head>
+<body>
+<div class="container">
+	<form enctype="application/json" action="/calendar/add" method="POST" >
+    <h2 class="">Add Event</h2>
+    <input class="flatpickr" type="text" class="form-control" placeholder="Select Start Time.." name="start_time"><br>
+    <input class="flatpickr" type="text" class="form-control" placeholder="Select End Time.." name="end_time">
+    <textarea name="description" rows="5" class="form-control" placeholder="Description"></textarea>
+    <input type="submit" class="btn btn-default" value="add"/>
+  </form>
+</div>
+</body>
+    <script>
+        flatpickr(".flatpickr", {
+        enableTime: true
+        });
+    </script>
+</html>
