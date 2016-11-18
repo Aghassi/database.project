@@ -121,8 +121,8 @@ module.exports = function(app, passport) {
 
 		// adds an event to a user's calendar
 		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, description, created_date) \
-		VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format(), moment(req.body.end_time).format(),
-			req.body.description, moment().format()], function(err, result){
+		VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"),
+			req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result){
 				if (err)
 				return console.log(err);
 				else{
