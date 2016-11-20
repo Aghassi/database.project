@@ -1,0 +1,40 @@
+<!-- views/signup.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>EECS 341 Authentication</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+	<style>
+		body 		{ padding-top:80px; }
+	</style>
+</head>
+<body>
+<div class="container">
+
+<div class="col-sm-6 col-sm-offset-3">
+
+	<h1>Employee Info</h1>
+	<!-- LOGIN FORM -->
+	<form action="/profile/info" method="post">
+		<div class="form-group">
+			<label>Name</label>
+			<input value="<%= info.name %>" type="text" class="form-control" name="name">
+		</div>
+		<div class="form-group">
+			<label>Title</label>
+			<input value="<%= info.title %>" type="text" class="form-control" name="title">
+		</div>
+		<div class="form-group">
+			<label>Department</label>
+			<input value="<%= info.dept %>" type="text" class="form-control" name="dept">
+		</div>
+
+		<button type="submit" class="btn btn-default">Save</button>
+	</form>
+
+</div>
+
+</div>
+</body>
+</html>
