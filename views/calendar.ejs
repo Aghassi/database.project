@@ -11,39 +11,60 @@
     <script src='/js/fullcalendar.min.js'></script>
     <script src='/js/bootstrap.min.js'></script>
     <script src='/js/bootbox.min.js'></script>
+    <!-- datetime Picker -->
+	<link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/flatpickr"></script>
     <script>
         $(document).ready(function() {
-    
+        
         // page is now ready, initialize the calendar...
         
         $('#calendar').fullCalendar({
                 events : { events : <%- JSON.stringify(results) %> },
                 eventClick: function(calEvent, jsEvent, view) {
                     // show event data modal
-                    bootbox.confirm({
+                    bootbox.dialog({
                         title: calEvent.title,
                         message: '<p><strong>Start Date:</strong> ' + moment(calEvent.start).format('MMMM Do YYYY, h:mm a') + '</p>' +
                                  '<p><strong>End Date:</strong> ' + moment(calEvent.end).format('MMMM Do YYYY, h:mm a') + '</p>'  +
                                  '<br>' +
                                  '<p>' + calEvent.description + '</p>',
                         buttons: {
-                            confirm: {
+                            edit: {
                                 label: 'Edit',
-                                className: 'btn-default'
+                                className: 'btn-primary',
+                                callback: function () {
+                                    
+                                    // open edit modal
+                                    bootbox.dialog({
+                                        title: calEvent.title + ' - Edit',
+                                        message: '<form action="/calendar/editevent" method="post">' +
+                                                    '<input type="hidden" name="event_id" value="' + calEvent.id + '">' +
+                                                    '<strong>Start Date: </strong>' +
+                                                    '<input class="flatpickr" type="text" name="start_time" value="' + moment(calEvent.start).format('YYYY-MM-DD HH:mm') + '"><br>' +
+                                                    '<strong>End Date: </strong>' +
+                                                    '<input class="flatpickr" type="text" name="end_time" value="' + moment(calEvent.end).format('YYYY-MM-DD HH:mm') +'"><br>' +
+                                                    '<strong>Description: </strong>' +
+                                                    '<textarea name="description" rows="5">' + calEvent.description + '</textarea><br>' +
+                                                    '<input type="submit" class="btn btn-default" value="Save"/>' +
+                                                 '</form>',
+                                    });
+                                     
+                                    flatpickr(".flatpickr", {
+                                        enableTime: true
+                                    });   
+                                }
                             },
-                            cancel: {
-                                label: 'Close',
-                                className: 'btn-default'
-                            }
-                        },
-                        callback: function (result) {
-                            if(result){
-                                console.log('Edit');
-                                // open edit modal
-                                // TODO
-                            }
-                            else{
-                                // closes this modal
+                            del: {
+                                label: 'Delete',
+                                className: 'btn-danger',
+                                callback: function () {
+                                    var form = $('<form action="/calendar/deleteevent" method="post">' +
+                                      '<input type="text" name="event_id" value="' + calEvent.id + '" />' +
+                                      '</form>');
+                                    $('body').append(form);
+                                    form.submit();
+                                }
                             }
                         }
                     });

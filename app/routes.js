@@ -30,8 +30,6 @@ module.exports = function(app, passport) {
 		failureFlash : true // allow flash messages
 	}),
 	function(req, res) {
-		console.log("hello");
-
 		if (req.body.remember) {
 			req.session.cookie.maxAge = 1000 * 60 * 3;
 		} else {
@@ -55,7 +53,7 @@ module.exports = function(app, passport) {
 		failureRedirect : '/signup', // redirect back to the signup page if there is an error
 		failureFlash : true // allow flash messages
 	}));
-
+	
 	// =====================================
 	// PROFILE SECTION =====================
 	// =====================================
@@ -66,6 +64,61 @@ module.exports = function(app, passport) {
 			user : req.user // get the user out of session and pass to template
 		});
 	});
+	
+	// set employee information
+	app.get('/profile/info', isLoggedIn, function(req, res) {
+	    
+		connection.query("SELECT name, title, dept FROM " + dbconfig.database + "." + "users WHERE user_id=?", [req.user.user_id], function(err, rows) {
+			if (err)
+			return console.log(err);
+			if (rows.length) {
+				var name = '';
+				var title = '';
+				var dept = '';
+				
+				// replace nulls with empty string
+				if(rows[0].name != 'null'){
+					name = rows[0].name;
+				}
+				
+				if(rows[0].title != 'null'){
+					title = rows[0].title;
+				}
+				
+				if(rows[0].dept != 'null'){
+					dept = rows[0].dept;
+				}
+				
+				var info = {
+					name : name,
+					title : title,
+					dept : dept
+				};
+				
+				res.render('profile-info.ejs', {
+					user : req.user,
+					info : info
+				});
+			}
+		});
+	});
+	
+	// update employee info
+	app.post('/profile/info', isLoggedIn, function(req, res){
+
+		// updates user info
+		connection.query("UPDATE " + dbconfig.database + "." + "users SET name=?, title=?, dept=? WHERE user_id=?", 
+		[req.body.name, req.body.title, req.body.dept, req.user.user_id], function(err, result){
+				if (err)
+				return console.log(err);
+				else{
+					console.log('Updated!');
+				}
+			});
+
+		res.redirect('/profile');
+	});
+	
 
 	// =====================================
 	// LOGOUT ==============================
@@ -121,9 +174,6 @@ module.exports = function(app, passport) {
 
 	app.post('/calendar/add', isLoggedIn, function(req, res){
 
-		console.log(req.body.start_time);
-		console.log(req.body.end_time);
-
 		// adds an event to a user's calendar
 		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, description, created_date) \
 		VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"),
@@ -135,14 +185,40 @@ module.exports = function(app, passport) {
 				}
 			});
 
-			res.redirect('/calendar')
-		});
-
-		/* Template
-		app.get('', function(req, res) {
-
+		res.redirect('/calendar');
 	});
-	*/
+
+	// edit an event
+	app.post('/calendar/editevent', isLoggedIn, function(req, res){
+
+		// updates user info
+		connection.query("UPDATE " + dbconfig.database + "." + "events SET start_time=?, end_time=?, description=?, created_date=? WHERE event_id=?", 
+		[moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.description, moment().format("YYYY-MM-DD HH:mm:ss"), req.body.event_id], function(err, result){
+				if (err)
+				return console.log(err);
+				else{
+					console.log('Updated!');
+				}
+			});
+
+		res.redirect('/calendar');
+	});
+	
+	// delete an event
+	app.post('/calendar/deleteevent', isLoggedIn, function(req, res){
+
+		// updates user info
+		connection.query("DELETE FROM " + dbconfig.database + "." + "events WHERE event_id=?", 
+		[req.body.event_id], function(err, result){
+				if (err)
+				return console.log(err);
+				else{
+					console.log('Deleted!');
+				}
+			});
+
+		res.redirect('/calendar');
+	});
 };
 
 // route middleware to make sure
