@@ -25,7 +25,7 @@
                     // show event data modal
                     bootbox.dialog({
                         title: calEvent.title,
-                        message: '<p><strong>Start Date:</strong> ' + moment(calEvent.start).format('MMMM Do YYYY, h:mm a') + '</p>' +
+                        message: '<h3>'+calEvent.title+'</h3><p><strong>Start Date:</strong> ' + moment(calEvent.start).format('MMMM Do YYYY, h:mm a') + '</p>' +
                                  '<p><strong>End Date:</strong> ' + moment(calEvent.end).format('MMMM Do YYYY, h:mm a') + '</p>'  +
                                  '<br>' +
                                  '<p>' + calEvent.description + '</p>',
@@ -80,8 +80,10 @@
 </head>
 <body>
 <div class="container">
-    <a class="btn btn-default" href="/calendar/add">Add Event</a>
+    <h1><%= user.username %>'s Calendar</h1>
 	<div id='calendar'></div>
+    <br>
+    <p align="right"><a class="btn btn-default" href="/calendar/add">Add Event</a></p>
 </div>
 </body>
 </html>
