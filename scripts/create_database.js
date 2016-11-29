@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS`' + dbconfig.database + '`.`' + dbconfig.events_table
   `creator` INT NOT NULL, \
   `start_time` DATETIME NOT NULL, \
   `end_time` DATETIME NOT NULL, \
+  `title` NVARCHAR(20) NOT NULL, \
   `description` NVARCHAR(100) NULL, \
   `created_date` DATETIME NOT NULL, \
   PRIMARY KEY (`event_id`) \
