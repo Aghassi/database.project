@@ -176,8 +176,7 @@ module.exports = function(app, passport) {
 
 		// adds an event to a user's calendar
 		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, title, description, created_date) \
-		VALUES (?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"),
-			req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result){
+		VALUES (?, ?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result){
 				if (err)
 				return console.log(err);
 				else{
@@ -192,8 +191,7 @@ module.exports = function(app, passport) {
 	app.post('/calendar/editevent', isLoggedIn, function(req, res){
 
 		// updates user info
-		connection.query("UPDATE " + dbconfig.database + "." + "events SET start_time=?, end_time=?, title=? description=?, created_date=? WHERE event_id=?", 
-		[moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss"), req.body.event_id], function(err, result){
+		connection.query("UPDATE " + dbconfig.database + "." + "events SET start_time=?, end_time=?, title=?, description=?, created_date=? WHERE event_id=?", [moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss"), req.body.event_id], function(err, result){
 				if (err)
 				return console.log(err);
 				else{
