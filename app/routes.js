@@ -146,7 +146,7 @@ module.exports = function(app, passport) {
 					// set events below to results
 					var event = {
 						id : rows[i].event_id,
-						title : rows[i].event_id,
+						title : rows[i].title,
 						start : rows[i].start_time,
 						end : rows[i].end_time,
 						description : rows[i].description,
