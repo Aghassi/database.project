@@ -77,6 +77,14 @@ module.exports = function(passport) {
                         if (err) throw err;
                         newUserMysql.id = rows.insertId;
 
+                        if (req.body.isManager == "on") {
+                          var insertManagerQuery = "INSERT INTO managers ( user_id, dept ) values (?,?)";
+
+                          connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
+                            if (err) throw err;
+                          });
+                        }
+
                         return done(null, newUserMysql);
                     });
                 }
