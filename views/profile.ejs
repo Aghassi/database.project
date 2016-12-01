@@ -13,14 +13,13 @@
 <div class="container">
 	<div class="page-header text-center">
 		<h1><span class="fa fa-anchor"></span> My scheduler</h1>
-		Logged in as <%= user.username %> (Employee # <%= user.user_id %>).<br>
-		<a href="/logout" class="btn btn-default btn-sm">Logout</a>
+		<p>Logged in as <%= user.username %> (Employee # <%= user.user_id %>).</p>
+		<p><a class="btn btn-default btn-sm" href="/calendar"> Calendar</a> <a class="btn btn-default btn-sm" href="/profile/info">Edit Employee Info</a> <a href="/logout" class="btn btn-default btn-sm">Logout</a></p>
 	</div>
 
 	<div class="row">
 		<!-- LOCAL INFORMATION -->
 		<div class="col-sm-6">
-			<a class="btn btn-default" href="/calendar">See Calendar</a>
 			<div class="well">
 				<h3><span class="fa fa-user"></span> My Information</h3>
 					<p>
@@ -32,7 +31,31 @@
 						<!--<strong>password</strong>: <%= user.password %>-->
 					</p>
 			</div>
-			<a class="btn btn-default" href="/profile/info">Edit Employee Info</a>
+		</div>
+		<div class="col-sm-6">
+			<div class="well">
+				<h3><span class="fa fa-calendar"></span> My Schedule</h3>
+				<% if (user_events.length) { %>
+					<ul>
+					<% for (var i = 0; i < user_events.length; i++) { %>
+						<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].creator %>
+						</li>
+					<% } %>
+				</ul>
+				<% } else { %>
+					<p>
+						If you have any schedule that either belong to you or you have accepted the invitation to, it will appear here.
+					</p>
+				<% } %>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="well">
+				<h3><span class="fa fa-bell"></span> Notifications</h3>
+				<p>
+					If you have any invite that you have not yet responded to, it will appear here.
+				</p>
+			</div>
 		</div>
 	</div>
 </div>

@@ -3,7 +3,7 @@ module.exports = function(app, passport) {
 
 	var mysql = require('mysql');
 	var dbconfig = require('../config/database.js');
-	var connection = mysql.createConnection(dbconfig.connection);
+	var connection = mysql.createConnection(dbconfig.connection, {multipleStatements: true});
 	var moment = require('moment');
 
 	// =====================================
@@ -60,9 +60,37 @@ module.exports = function(app, passport) {
 	// we will want this protected so you have to be logged in to visit
 	// we will use route middleware to verify this (the isLoggedIn function)
 	app.get('/profile', isLoggedIn, function(req, res) {
-		res.render('profile.ejs', {
-			user : req.user // get the user out of session and pass to template
+		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + "." + "invites i ON e.event_id = i.event_id WHERE employee=?"
+						, [req.user.user_id], function(err, results) {
+
+			var user_events = [];
+			if (err)
+				return console.log(err);
+			if (results.length) {
+				for (var i = 0; i < results.length; i++) {
+					var event = {
+						id : results[i].event_id,
+						creator : results[i].creator,
+						start : results[i].start_time,
+						end : results[i].end_time,
+						title : results[i].title,
+						description : results[i].description,
+						created_date : results[i].created_date
+						// status : results[i].status
+					};
+					user_events.push(event);
+				}
+			}
+			res.render('profile.ejs', {
+				user : req.user, // get the user out of session and pass to template
+				user_events : user_events
+			});
+
 		});
+
+
+
+
 	});
 	
 	// set employee information
@@ -70,7 +98,7 @@ module.exports = function(app, passport) {
 	    
 		connection.query("SELECT name, title, dept FROM " + dbconfig.database + "." + "users WHERE user_id=?", [req.user.user_id], function(err, rows) {
 			if (err)
-			return console.log(err);
+				return console.log(err);
 			if (rows.length) {
 				var name = '';
 				var title = '';
@@ -176,13 +204,24 @@ module.exports = function(app, passport) {
 
 		// adds an event to a user's calendar
 		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, title, description, created_date) \
-		VALUES (?, ?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result){
+		VALUES (?, ?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result) {
 				if (err)
-				return console.log(err);
-				else{
+					return console.log(err);
+				else {
+					// adds an invite
+					connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
+					VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 0], function(err, result){
+							if (err)
+								return console.log(err);
+							else {
+								console.log('Invited!');
+							}
+						});
+
 					console.log('Added!');
 				}
 			});
+
 
 		res.redirect('/calendar');
 	});
@@ -217,6 +256,12 @@ module.exports = function(app, passport) {
 
 		res.redirect('/calendar');
 	});
+
+
+	app.get('/invite/new', isLoggedIn, function(req, res){
+		res.render('invite-new.ejs');
+	});
+
 };
 
 // route middleware to make sure
