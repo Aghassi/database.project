@@ -39,7 +39,8 @@
                                     bootbox.dialog({
                                         title: calEvent.title + ' - Edit',
                                         message: '<form action="/calendar/editevent" method="post">' +
-                                                    '<input type="hidden" name="event_id" value="' + calEvent.id + '">' +
+                                                    '<input type="hidden" name="event_id" value="' + calEvent.id + '"><br>' +
+                                                    '<strong>Title</strong><br><input name="title" type="text" class="form-control" value="'+ calEvent.title +'"><br>' + 
                                                     '<strong>Start Date: </strong>' +
                                                     '<input class="flatpickr" type="text" name="start_time" value="' + moment(calEvent.start).format('YYYY-MM-DD HH:mm') + '"><br>' +
                                                     '<strong>End Date: </strong>' +
