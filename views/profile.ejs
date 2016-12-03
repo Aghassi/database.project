@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-	<title>Node Authentication</title>
+	<title>EECS341 Scheduler Profile</title>
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
 	<style>
@@ -10,18 +10,19 @@
 	</style>
 </head>
 <body>
-<div class="container">
-	<div class="page-header text-center">
-		<h1><span class="fa fa-anchor"></span> My scheduler</h1>
-		<p>Logged in as <%= user.username %> (Employee # <%= user.user_id %>).</p>
-		<p><a class="btn btn-default btn-sm" href="/calendar"> Calendar</a> <a class="btn btn-default btn-sm" href="/profile/info">Edit Employee Info</a> <a href="/logout" class="btn btn-default btn-sm">Logout</a></p>
-	</div>
+	<div class="container">
+		<div class="page-header text-center">
+			<h1><span class="fa fa-anchor"></span> My scheduler</h1>
+			<h2>Welcome, <%= user.name %>.</h2>
+			<p>Logged in as <%= user.username %>, <%= user.title %> in <%= user.dept %> (Employee #<%= user.user_id %>).</p>
+			<p><a class="btn btn-default btn-sm" href="/calendar"> Calendar</a> <a class="btn btn-default btn-sm" href="/profile/info">Edit Employee Info</a> <a href="/logout" class="btn btn-default btn-sm">Logout</a></p>
+		</div>
 
-	<div class="row">
-		<!-- LOCAL INFORMATION -->
-		<div class="col-sm-6">
-			<div class="well">
-				<h3><span class="fa fa-user"></span> My Information</h3>
+		<div class="row">
+			<!-- LOCAL INFORMATION -->
+			<div class="col-sm-6">
+				<div class="well">
+					<h3><span class="fa fa-user"></span> My Information</h3>
 					<p>
 						<strong>Employee ID</strong>: <%= user.user_id %><br>
 						<strong>Username</strong>: <%= user.username %><br>
@@ -30,34 +31,47 @@
 						<strong>Department</strong>: <%= user.dept %><br>
 						<!--<strong>password</strong>: <%= user.password %>-->
 					</p>
+				</div>
 			</div>
-		</div>
-		<div class="col-sm-6">
-			<div class="well">
-				<h3><span class="fa fa-calendar"></span> My Schedule</h3>
-				<% if (user_events.length) { %>
+			<div class="col-sm-6">
+				<div class="well">
+					<h3><span class="fa fa-calendar"></span> My Schedule</h3>
+					<% if (user_events.length) { %>
 					<ul>
-					<% for (var i = 0; i < user_events.length; i++) { %>
+						<% for (var i = 0; i < user_events.length; i++) { %>
+						<% if (user_events[i].status != '0') { %>
 						<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].creator %>
 						</li>
-					<% } %>
-				</ul>
-				<% } else { %>
+						<% } %>
+						<% } %>
+					</ul>
+					<% } else { %>
 					<p>
 						If you have any schedule that either belong to you or you have accepted the invitation to, it will appear here.
 					</p>
-				<% } %>
+					<% } %>
+				</div>
 			</div>
-		</div>
-		<div class="col-sm-6">
-			<div class="well">
-				<h3><span class="fa fa-bell"></span> Notifications</h3>
-				<p>
-					If you have any invite that you have not yet responded to, it will appear here.
-				</p>
+			<div class="col-sm-6">
+				<div class="well">
+					<h3><span class="fa fa-bell"></span> Notifications</h3>
+					<% if (user_events.length) { %>
+					<ul>
+						<% for (var i = 0; i < user_events.length; i++) { %>
+						<% if (user_events[i].status == '0') { %>
+						<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].creator %>
+						</li>
+						<% } %>
+						<% } %>
+					</ul>
+					<% } else { %>
+					<p>
+						If you have any invite that you have not yet responded to, it will appear here.
+					</p>
+					<% } %>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 </body>
 </html>

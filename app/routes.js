@@ -213,9 +213,7 @@ module.exports = function(app, passport) {
 					VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 0], function(err, result){
 							if (err)
 								return console.log(err);
-							else {
-								console.log('Invited!');
-							}
+							console.log('Invited!');
 						});
 
 					console.log('Added!');
@@ -224,6 +222,47 @@ module.exports = function(app, passport) {
 
 
 		res.redirect('/calendar');
+	});
+
+	app.get('/calendar/invite', isLoggedIn, function(req, res) {
+		var getLang = function(req, res, next) {
+		  if (req.body.event_id) {
+		     connection.query("SELECT user_id, name, title, dept FROM " + dbconfig.database + ".users", function(err, rows) {
+		     	if (err)
+		     		return console.log(err);
+		     	if (rows.length) {
+		     		var result = [];
+		     		for(var i = 0 ; i < rows.length ; i++){
+		     			// create event object
+		     			// insert into results
+		     			// set events below to results
+		     			var user_info = {
+		     				user_id : rows[i].user_id,
+		     				name : rows[i].name,
+		     				title : rows[i].title,
+		     				dept : rows[i].dept,
+		     			};
+		     			result.push(user_info);
+		     		}
+
+		     		res.render('calendar-invite.ejs', {
+		     			user: req.user,
+		     			result : result,
+		     			event_id : req.body.event_id
+		     		});
+		     	} else {
+		     		res.render('calendar-invite.ejs', {
+		     			user: req.user,
+		     			results : [],
+		     			event_id : req.body.event_id
+		     		});
+		     	}
+		     });
+
+		  } else {
+		  		res.render('calendar');
+		  }
+		}
 	});
 
 	// edit an event
@@ -258,9 +297,19 @@ module.exports = function(app, passport) {
 	});
 
 
-	app.get('/invite/new', isLoggedIn, function(req, res){
-		res.render('invite-new.ejs');
+	// =====================================
+	// INVITE ==============================
+	// =====================================
+	// show the invite form
+	app.get('/invite-new', isLoggedIn, function(req, res){
+		res.render('invite-new.ejs', { message: req.flash('signupMessage') });
 	});
+	// process the invite form
+	app.post('/invite-new', passport.authenticate('local-signup', {
+		successRedirect : '/profile', // redirect to the secure profile section
+		failureRedirect : '/signup', // redirect back to the signup page if there is an error
+		failureFlash : true // allow flash messages
+	}));
 
 };
 
@@ -274,3 +323,67 @@ function isLoggedIn(req, res, next) {
 	// if they aren't redirect them to the home page
 	res.redirect('/');
 };
+
+
+// helper method for GET url parameters
+// source: https://www.sitepoint.com/get-url-parameters-with-javascript/
+function getAllUrlParams(url) {
+  // get query string from url (optional) or window
+  var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+
+  // we'll store the parameters here
+  var obj = {};
+
+  // if query string exists
+  if (queryString) {
+
+    // stuff after # is not part of query string, so get rid of it
+    queryString = queryString.split('#')[0];
+
+    // split our query string into its component parts
+    var arr = queryString.split('&');
+
+    for (var i=0; i<arr.length; i++) {
+      // separate the keys and the values
+      var a = arr[i].split('=');
+
+      // in case params look like: list[]=thing1&list[]=thing2
+      var paramNum = undefined;
+      var paramName = a[0].replace(/\[\d*\]/, function(v) {
+        paramNum = v.slice(1,-1);
+        return '';
+      });
+
+      // set parameter value (use 'true' if empty)
+      var paramValue = typeof(a[1])==='undefined' ? true : a[1];
+
+      // (optional) keep case consistent
+      paramName = paramName.toLowerCase();
+      paramValue = paramValue.toLowerCase();
+
+      // if parameter name already exists
+      if (obj[paramName]) {
+        // convert value to array (if still string)
+        if (typeof obj[paramName] === 'string') {
+          obj[paramName] = [obj[paramName]];
+        }
+        // if no array index number specified...
+        if (typeof paramNum === 'undefined') {
+          // put the value on the end of the array
+          obj[paramName].push(paramValue);
+        }
+        // if array index number specified...
+        else {
+          // put the value at that index number
+          obj[paramName][paramNum] = paramValue;
+        }
+      }
+      // if param name doesn't exist yet, set it
+      else {
+        obj[paramName] = paramValue;
+      }
+    }
+  }
+
+  return obj;
+}

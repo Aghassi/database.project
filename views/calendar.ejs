@@ -30,6 +30,30 @@
                                  '<br>' +
                                  '<p>' + calEvent.description + '</p>',
                         buttons: {
+                            invite: {
+                                label: 'Invite',
+                                className: 'btn-info',
+                                callback: function () {
+                                    
+                                    // open edit modal
+                                    bootbox.dialog({
+                                        title: calEvent.title + ' - Invite',
+                                        message: '<form action="/calendar/invite" method="post">' +
+                                                    '<input type="hidden" name="event_id" value="' + calEvent.id + '"><br>' +
+                                                    '<strong>Enter Username to invite:</strong><br>' + 
+                                                    '<input type="text" name="username" value="" class="form-control"><br>' +
+                                                    '<p align="right"><input type="submit" class="btn btn-info" value="Add"/></p>' + 
+                                                    '<strong>Invited Users:</strong><Br>' +
+                                                    '<input type="checkbox">' + calEvent.description + '<br>' +
+                                                    '<input type="submit" class="btn btn-default" value="Save"/>' +
+                                                 '</form>',
+                                    });
+                                     
+                                    flatpickr(".flatpickr", {
+                                        enableTime: true
+                                    });   
+                                }
+                            },
                             edit: {
                                 label: 'Edit',
                                 className: 'btn-primary',
