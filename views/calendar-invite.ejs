@@ -6,6 +6,7 @@
 	<!-- bootstrap CSS -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <script src='/js/jquery.min.js'></script>
     <style>
 		body 		{ padding-top:80px; word-wrap:break-word; }
 	</style>
@@ -15,15 +16,45 @@
 </head>
 <body>
 <div class="container">
-	<form enctype="application/json" action="/calendar/add" method="POST" >
+    <table class="table">
+        <tr>
+            <th>Employee</th>
+            <th>Invite Status</th>
+            <th></th>
+        </tr>
+        
+        <tr>
+            <% function cdToString(int, status) { %>
+                <% if(status === 0){ return 'Awaiting response' } %>
+                <% if(status === 1){ return 'Accepted' } %>
+                <% if(status === 2){ return 'Declined' } %>
+                <% return 'Error in parsing status.' %>
+            <% } %>
+            <% for (var i = 0; i < invitesList.length; i++) { %> 
+            <% for (var j = 0; j < usersList.length; j++) { %>
+               <% if(invitesList[i].employee === usersList[j].user_id) { %>
+                   <td><%= usersList[j].name %></td>
+                   <td><%= cdToString(invitesList[i].status) %></td>
+                   <td>
+                    <form action="/calendar/invite/delete" method="POST">
+                        <input type="hidden" name="event_id" value="<%= event_id %>" />
+                        <input type="hidden" name="user_id" value="<%= invitesList[i].employee %>" />
+                        <input type="submit" class="btn btn-danger" value="Delete Invite" />
+                    </form>
+                   </td>
+               <% } %>
+           <% } %>
+           <% } %>
+        </tr>
+    </table>
+    
+    
+	<form enctype="application/json" action="/calendar/invite/add" method="POST" >
     <h2 class="">Invite User to ''</h2>
-    <input name="event_id" type="hidden" class="form-control" value=""><br>
-    <p>
-       <% for (var i = 0; i < result.length; i++) { %> 
-            <input type="checkbox" name="invitee" value="<%= result[i].user_id %>"> <%= result[i].name %> (<%= result[i].title %> at <%= result[i].dept %>)<br>
-       <% } %>
-    </p>
-    <input type="add" class="btn btn-default" value="Add to invites list"/>
+    <input type="text" id="search" placeholder="Employee Name"></input>
+    <div id="lists">
+    </div>
+    <input name="event_id" type="hidden" class="form-control" value="<%= event_id %>"><br>
     <input type="submit" class="btn btn-default" value="Submit"/>
   </form>
 </div>
@@ -32,5 +63,42 @@
         flatpickr(".flatpickr", {
         enableTime: true
         });
+        
+        // implement fuzzy search
+        var fuzzy = require('fuzzy');
+        
+        var listItemTemplate = _.template('<li onclick="completeSearch(this.value)">{{name}}</li>');
+        
+        function displayResults() {
+            var search = $('#search').val();
+            
+            var options = {};
+            
+            // filter
+            var filtered = fuzzy.filter(search, usersList, options);
+            
+            // map results to HTML
+            var results = filtered.slice(0,10).map(function(result){
+                var items = result.string.split('::');
+                return listItemTemplate({
+                    name : result.string     
+                });
+            });
+            
+            // update HTML
+             $('#lists').html(results.join(''));
+        }
+        
+        $(function(){
+           // List the initial characters
+          displayResults();
+          
+          // Filter the characters on each change of the textbox
+          $('#search').keyup(displayResults);
+        });
+        
+        function completeSearch(value){
+            $('#search').value = value;
+        }
     </script>
 </html>

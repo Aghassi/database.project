@@ -70,7 +70,8 @@ module.exports = function(app, passport) {
 				for (var i = 0; i < results.length; i++) {
 					var event = {
 						id : results[i].event_id,
-						creator : results[i].creator,
+						event_creator : results[i].event_creator,
+						event_owner : results[i].event_owner,
 						start : results[i].start_time,
 						end : results[i].end_time,
 						title : results[i].title,
@@ -162,7 +163,7 @@ module.exports = function(app, passport) {
 	app.get('/calendar', isLoggedIn, function (req, res) {
 
 		// populates a user's calendar with their events
-		connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE creator=?", [req.user.user_id], function(err, rows) {
+		connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_creator=? OR event_owner=?", [req.user.user_id, req.user.user_id], function(err, rows) {
 
 			if (err)
 			return console.log(err);
@@ -203,8 +204,8 @@ module.exports = function(app, passport) {
 	app.post('/calendar/add', isLoggedIn, function(req, res){
 
 		// adds an event to a user's calendar
-		connection.query("INSERT INTO " + dbconfig.database + "." + "events (creator, start_time, end_time, title, description, created_date) \
-		VALUES (?, ?, ?, ?, ?, ?)", [req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result) {
+		connection.query("INSERT INTO " + dbconfig.database + "." + "events (event_creator, event_owner, start_time, end_time, title, description, created_date) \
+		VALUES (?, ?, ?, ?, ?, ?, ?)", [req.user.user_id, req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result) {
 				if (err)
 					return console.log(err);
 				else {
@@ -222,47 +223,6 @@ module.exports = function(app, passport) {
 
 
 		res.redirect('/calendar');
-	});
-
-	app.get('/calendar/invite', isLoggedIn, function(req, res) {
-		var getLang = function(req, res, next) {
-		  if (req.body.event_id) {
-		     connection.query("SELECT user_id, name, title, dept FROM " + dbconfig.database + ".users", function(err, rows) {
-		     	if (err)
-		     		return console.log(err);
-		     	if (rows.length) {
-		     		var result = [];
-		     		for(var i = 0 ; i < rows.length ; i++){
-		     			// create event object
-		     			// insert into results
-		     			// set events below to results
-		     			var user_info = {
-		     				user_id : rows[i].user_id,
-		     				name : rows[i].name,
-		     				title : rows[i].title,
-		     				dept : rows[i].dept,
-		     			};
-		     			result.push(user_info);
-		     		}
-
-		     		res.render('calendar-invite.ejs', {
-		     			user: req.user,
-		     			result : result,
-		     			event_id : req.body.event_id
-		     		});
-		     	} else {
-		     		res.render('calendar-invite.ejs', {
-		     			user: req.user,
-		     			results : [],
-		     			event_id : req.body.event_id
-		     		});
-		     	}
-		     });
-
-		  } else {
-		  		res.render('calendar');
-		  }
-		}
 	});
 
 	// edit an event
@@ -300,16 +260,80 @@ module.exports = function(app, passport) {
 	// =====================================
 	// INVITE ==============================
 	// =====================================
-	// show the invite form
-	app.get('/invite-new', isLoggedIn, function(req, res){
-		res.render('invite-new.ejs', { message: req.flash('signupMessage') });
+	app.get('/calendar/invite', isLoggedIn, function(req, res) {
+		function getParameterByName(name, url) {
+		    if (!url) {
+		      url = window.location.href;
+		    }
+		    name = name.replace(/[\[\]]/g, "\\$&");
+		    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		        results = regex.exec(url);
+		    if (!results) return null;
+		    if (!results[2]) return '';
+		    return decodeURIComponent(results[2].replace(/\+/g, " "));
+		}
+		var event_id = getParameterByName('event_id', req.url);
+		if (event_id) {
+		  	 // get all users to be able to invite any user 
+		     connection.query("SELECT user_id, name, title, dept FROM " + dbconfig.database + "." + "users", function(err, rows) {
+		     	if (err)
+		     		return console.log(err);
+		     	if (rows.length) {
+		     		var usersList = [];
+		     		for(var i = 0 ; i < rows.length ; i++){
+		     			var user_info = {
+		     				user_id : rows[i].user_id,
+		     				name : rows[i].name,
+		     				title : rows[i].title,
+		     				dept : rows[i].dept,
+		     			};
+		     			usersList.push(user_info);
+		     		}
+		     		
+		     		// get list of current invites to the event
+		     		connection.query("SELECT employee, status FROM " + dbconfig.database + "." + "invites WHERE event_id=?", [event_id], function(err, rows){
+		     			if (err)
+				     		return console.log(err);
+				     	if (rows.length) {
+				     		var invitesList = [];
+				     		for(var i = 0 ; i < rows.length ; i++){
+				     			var invite_info = {
+				     				employee : rows[i].employee,
+				     				status : rows[i].status
+				     			};
+				     			invitesList.push(invite_info);
+				     		}
+				     	}
+				     	
+				     	// hits here, but doesn't display the page...why?
+				     	console.log('hit');
+				     	
+				     	res.render('calendar-invite.ejs', {
+			     			user: req.user,
+			     			usersList : usersList,
+			     			invitesList : invitesList,
+			     			event_id : event_id
+			     		});
+		     		});
+		     	}
+		     });
+		} 
+		else {
+			console.log('failed');
+	  		res.redirect('/calendar');
+		}
 	});
-	// process the invite form
-	app.post('/invite-new', passport.authenticate('local-signup', {
-		successRedirect : '/profile', // redirect to the secure profile section
-		failureRedirect : '/signup', // redirect back to the signup page if there is an error
-		failureFlash : true // allow flash messages
-	}));
+	
+	// // show the invite form
+	// app.get('/invite-new', isLoggedIn, function(req, res){
+	// 	res.render('invite-new.ejs', { message: req.flash('signupMessage') });
+	// });
+	// // process the invite form
+	// app.post('/invite-new', passport.authenticate('local-signup', {
+	// 	successRedirect : '/profile', // redirect to the secure profile section
+	// 	failureRedirect : '/signup', // redirect back to the signup page if there is an error
+	// 	failureFlash : true // allow flash messages
+	// }));
 
 };
 
