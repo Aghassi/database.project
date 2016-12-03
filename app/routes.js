@@ -53,7 +53,7 @@ module.exports = function(app, passport) {
 		failureRedirect : '/signup', // redirect back to the signup page if there is an error
 		failureFlash : true // allow flash messages
 	}));
-	
+
 	// =====================================
 	// PROFILE SECTION =====================
 	// =====================================
@@ -93,10 +93,10 @@ module.exports = function(app, passport) {
 
 
 	});
-	
+
 	// set employee information
 	app.get('/profile/info', isLoggedIn, function(req, res) {
-	    
+
 		connection.query("SELECT name, title, dept FROM " + dbconfig.database + "." + "users WHERE user_id=?", [req.user.user_id], function(err, rows) {
 			if (err)
 				return console.log(err);
@@ -104,26 +104,26 @@ module.exports = function(app, passport) {
 				var name = '';
 				var title = '';
 				var dept = '';
-				
+
 				// replace nulls with empty string
 				if(rows[0].name != 'null'){
 					name = rows[0].name;
 				}
-				
+
 				if(rows[0].title != 'null'){
 					title = rows[0].title;
 				}
-				
+
 				if(rows[0].dept != 'null'){
 					dept = rows[0].dept;
 				}
-				
+
 				var info = {
 					name : name,
 					title : title,
 					dept : dept
 				};
-				
+
 				res.render('profile-info.ejs', {
 					user : req.user,
 					info : info
@@ -131,12 +131,12 @@ module.exports = function(app, passport) {
 			}
 		});
 	});
-	
+
 	// update employee info
 	app.post('/profile/info', isLoggedIn, function(req, res){
 
 		// updates user info
-		connection.query("UPDATE " + dbconfig.database + "." + "users SET name=?, title=?, dept=? WHERE user_id=?", 
+		connection.query("UPDATE " + dbconfig.database + "." + "users SET name=?, title=?, dept=? WHERE user_id=?",
 		[req.body.name, req.body.title, req.body.dept, req.user.user_id], function(err, result){
 				if (err)
 				return console.log(err);
@@ -147,7 +147,7 @@ module.exports = function(app, passport) {
 
 		res.redirect('/profile');
 	});
-	
+
 
 	// =====================================
 	// LOGOUT ==============================
@@ -239,12 +239,12 @@ module.exports = function(app, passport) {
 
 		res.redirect('/calendar');
 	});
-	
+
 	// delete an event
 	app.post('/calendar/deleteevent', isLoggedIn, function(req, res){
 
 		// updates user info
-		connection.query("DELETE FROM " + dbconfig.database + "." + "events WHERE event_id=?", 
+		connection.query("DELETE FROM " + dbconfig.database + "." + "events WHERE event_id=?",
 		[req.body.event_id], function(err, result){
 				if (err)
 				return console.log(err);
@@ -274,7 +274,7 @@ module.exports = function(app, passport) {
 		}
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
-		  	 // get all users to be able to invite any user 
+		  	 // get all users to be able to invite any user
 		     connection.query("SELECT user_id, name, title, dept FROM " + dbconfig.database + "." + "users", function(err, rows) {
 		     	if (err)
 		     		return console.log(err);
@@ -289,7 +289,7 @@ module.exports = function(app, passport) {
 		     			};
 		     			usersList.push(user_info);
 		     		}
-		     		
+
 		     		// get list of current invites to the event
 		     		connection.query("SELECT employee, status FROM " + dbconfig.database + "." + "invites WHERE event_id=?", [event_id], function(err, rows){
 		     			if (err)
@@ -301,29 +301,32 @@ module.exports = function(app, passport) {
 				     				employee : rows[i].employee,
 				     				status : rows[i].status
 				     			};
-				     			invitesList.push(invite_info);
+
+									if (invite_info.employee == user_info[i].user_id) {
+										invite_info.name = user_info[i].name;
+										invitesList.push(invite_info);
+									}
 				     		}
 				     	}
-				     	
+
 				     	// hits here, but doesn't display the page...why?
 				     	console.log('hit');
-				     	
+
 				     	res.render('calendar-invite.ejs', {
 			     			user: req.user,
-			     			usersList : usersList,
 			     			invitesList : invitesList,
 			     			event_id : event_id
 			     		});
 		     		});
 		     	}
 		     });
-		} 
+		}
 		else {
 			console.log('failed');
 	  		res.redirect('/calendar');
 		}
 	});
-	
+
 	// // show the invite form
 	// app.get('/invite-new', isLoggedIn, function(req, res){
 	// 	res.render('invite-new.ejs', { message: req.flash('signupMessage') });
