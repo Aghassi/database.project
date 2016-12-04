@@ -13,17 +13,33 @@ connection.query('USE ' + dbconfig.database);
 // expose this function to our app using module.exports
 module.exports = function(passport) {
 
-    var addSubordinates = function(manager, id) {
+    var addSubordinates = function(manager, id, signup) {
+      var queryUsers = "";
+
       // Check for people who the manager manages
-      var queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ?";
-      connection.query(queryUsers, [manager.dept], function(err, rows) {
-        console.log("Users in same department: " + rows);
-        for (var i = 0; i < rows.length; i++) {
-          connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
-            if (err) throw err;
-          });
-        }
-      });
+      if (signup) {
+        queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ?";
+
+        connection.query(queryUsers, [manager.dept], function(err, rows) {
+          console.log("Users in same department: " + rows);
+          for (var i = 0; i < rows.length; i++) {
+            connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
+              if (err) throw err;
+            });
+          }
+        });
+      } else {
+        queryUsers = "SELECT u.user_id FROM users u LEFT JOIN manages m ON u.user_id = m.user_id AND u.dept = ? WHERE m.user_id IS NULL";
+
+        connection.query(queryUsers, [manager.dept], function(err, rows) {
+          console.log("Users in same department not yet added: " + rows);
+          for (var i = 0; i < rows.length; i++) {
+            connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
+              if (err) throw err;
+            });
+          }
+        });
+      }
     };
 
     // =========================================================================
@@ -79,6 +95,35 @@ module.exports = function(passport) {
                         console.log("Number of managers: " + rows[0].number);
                         if (rows[0].number > 0) {
                           return done(null, false, req.flash('signupMessage', 'Manager already exists for that department.'));
+                        } else {
+                          // if there is no user with that username
+                          // create the user
+                          var newUserMysql = {
+                              username: username,
+                              password: bcrypt.hashSync(password, null, null),  // use the generateHash function in our user model
+                              name: req.body.name,
+                              title: req.body.title,
+                              dept: req.body.dept
+                          };
+
+                          var insertQuery = "INSERT INTO users ( username, password, name, title, dept ) values (?,?,?,?,?)";
+
+                          connection.query(insertQuery,[newUserMysql.username, newUserMysql.password, newUserMysql.name, newUserMysql.title, newUserMysql.dept],function(err, rows) {
+                              if (err) throw err;
+                              newUserMysql.id = rows.insertId;
+
+                              if (req.body.isManager == "on") {
+                                var insertManagerQuery = "INSERT INTO managers ( user_id, dept ) values (?,?)";
+
+                                connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
+                                  if (err) throw err;
+
+                                  addSubordinates(newUserMysql, newUserMysql.id, true);
+                                });
+                              }
+
+                              return done(null, newUserMysql);
+                          });
                         }
                       });
                     } else {
@@ -97,16 +142,6 @@ module.exports = function(passport) {
                         connection.query(insertQuery,[newUserMysql.username, newUserMysql.password, newUserMysql.name, newUserMysql.title, newUserMysql.dept],function(err, rows) {
                             if (err) throw err;
                             newUserMysql.id = rows.insertId;
-
-                            if (req.body.isManager == "on") {
-                              var insertManagerQuery = "INSERT INTO managers ( user_id, dept ) values (?,?)";
-
-                              connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
-                                if (err) throw err;
-
-                                addSubordinates(newUserMysql, newUserMysql.id);
-                              });
-                            }
 
                             return done(null, newUserMysql);
                         });
@@ -145,7 +180,7 @@ module.exports = function(passport) {
                 var user = rows[0];
                 connection.query("SELECT COUNT(user_id) as number FROM managers WHERE user_id = ?", rows[0].user_id, function(err, rows){
                   if (rows[0].number === 1) {
-                    addSubordinates(user, user.user_id);
+                    addSubordinates(user, user.user_id, false);
                   }
                 });
 
