@@ -34,7 +34,8 @@
                                 label: 'Invite',
                                 className: 'btn-info',
                                 callback: function () {
-                                    $.get('/calendar/invite', {event_id : calEvent.id});
+                                    window.location.replace('/calendar/invite?event_id=' + calEvent.id);
+                                    // $.get('/calendar/invite', {event_id : calEvent.id});
                                     
                                     // // open edit modal
                                     // bootbox.dialog({

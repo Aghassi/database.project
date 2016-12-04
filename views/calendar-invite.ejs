@@ -6,7 +6,10 @@
 	<!-- bootstrap CSS -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/custom.css">
     <script src='/js/jquery.min.js'></script>
+    <script src='/js/underscore-min.js'></script>
+    <script src='/js/fuzzy-min.js'></script>
     <style>
 		body 		{ padding-top:80px; word-wrap:break-word; }
 	</style>
@@ -16,6 +19,7 @@
 </head>
 <body>
 <div class="container">
+    <a style="margin-bottom:18px" class="btn btn-default" href="/calendar">Return to Calendar</a>
     <table class="table">
         <tr>
             <th>Employee</th>
@@ -23,14 +27,15 @@
             <th></th>
         </tr>
 
-        <tr>
-            <% function cdToString(status) { %>
-                <% if(status === 0){ return 'Awaiting response' } %>
-                <% if(status === 1){ return 'Accepted' } %>
-                <% if(status === 2){ return 'Declined' } %>
+        
+        <% function cdToString(status) { %>
+                <% if(status == 0){ return 'Awaiting response' } %>
+                <% if(status == 1){ return 'Accepted' } %>
+                <% if(status == 2){ return 'Declined' } %>
                 <% return 'Error in parsing status.' %>
             <% } %>
             <% for (var i = 0; i < invitesList.length; i++) { %>
+            <tr>
                  <td><%= invitesList[i].name %></td>
                  <td><%= cdToString(invitesList[i].status) %></td>
                  <td>
@@ -40,8 +45,9 @@
                       <input type="submit" class="btn btn-danger" value="Delete Invite" />
                   </form>
                  </td>
-           <% } %>
-        </tr>
+            </tr>
+       <% } %>
+        
     </table>
 
 	<form enctype="application/json" action="/calendar/invite/add" method="POST" >
@@ -58,19 +64,25 @@
         flatpickr(".flatpickr", {
         enableTime: true
         });
-
+        
         // implement fuzzy search
-        var fuzzy = require('fuzzy');
-
-        var listItemTemplate = _.template('<li onclick="completeSearch(this.value)">{{name}}</li>');
-
+        _.templateSettings = {
+          interpolate : /\{\{(.+?)\}\}/g
+        };
+        
+        var listItemTemplate = _.template('<li class="userlist" onclick="completeSearch(this.innerHTML)">{{name}}</li>');
+        
+        var list = <%- JSON.stringify(usersList) %>;
+        
         function displayResults() {
             var search = $('#search').val();
 
-            var options = {};
+            var options = {
+                extract: obj => obj.name
+            };
 
             // filter
-            var filtered = fuzzy.filter(search, usersList, options);
+            var filtered = fuzzy.filter(search, list, options);
 
             // map results to HTML
             var results = filtered.slice(0,10).map(function(result){
@@ -93,7 +105,8 @@
         });
 
         function completeSearch(value){
-            $('#search').value = value;
+            console.log(value);
+            $('#search').val(value);
         }
     </script>
 </html>
