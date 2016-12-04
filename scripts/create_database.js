@@ -83,7 +83,7 @@ CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.schedules_table + '` ( \
 connection.query('\
 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.invites_table + '` ( \
   `event_id` INT NOT NULL, \
-  `employee` INT NULL, \
+  `employee` INT NOT NULL, \
   `status` CHAR(1) NULL, \
   INDEX `user_id_idx` (`employee` ASC), \
   CONSTRAINT `employee` \
