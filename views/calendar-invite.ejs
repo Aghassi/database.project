@@ -33,6 +33,7 @@
                 <% if(status == 2){ return 'Declined' } %>
                 <% return 'Error in parsing status.' %>
             <% } %>
+            <% if (invitesList) { %>
             <% for (var i = 0; i < invitesList.length; i++) { %>
             <tr>
                  <td><%= invitesList[i].name %></td>
@@ -45,6 +46,7 @@
                   </form>
                  </td>
             </tr>
+            <% } %>
        <% } %>
         
     </table>
