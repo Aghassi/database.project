@@ -13,6 +13,19 @@ connection.query('USE ' + dbconfig.database);
 // expose this function to our app using module.exports
 module.exports = function(passport) {
 
+    var checkForSubordinates = function(manager, id) {
+      // Check for people who the manager manages
+      var queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ?";
+      connection.query(queryUsers, [manager.dept], function(err, rows) {
+        console.log("Users in same department: " + rows);
+        for (var i = 0; i < rows.length; i++) {
+          connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
+            if (err) throw err;
+          });
+        }
+      });
+    };
+
     // =========================================================================
     // passport session setup ==================================================
     // =========================================================================
@@ -52,42 +65,51 @@ module.exports = function(passport) {
             passReqToCallback : true // allows us to pass back the entire request to the callback
         },
         function(req, username, password, done) {
-            // find a user whose email is the same as the forms email
-            // we are checking to see if the user trying to login already exists
-            connection.query("SELECT * FROM users WHERE username = ?",[username], function(err, rows) {
-                if (err)
-                    return done(err);
-                if (rows.length) {
-                    return done(null, false, req.flash('signupMessage', 'That username is already taken.'));
-                } else {
-                    // if there is no user with that username
-                    // create the user
-                    var newUserMysql = {
-                        username: username,
-                        password: bcrypt.hashSync(password, null, null),  // use the generateHash function in our user model
-                        name: req.body.name,
-                        title: req.body.title,
-                        dept: req.body.dept
-                    };
-                    console.log(req.body);
+            // Check that we don't have more than one manager for the department
+            connection.query("SELECT COUNT(user_id) as number FROM managers WHERE dept = ?", req.body.dept, function(err, rows) {
+              console.log("Number of managers: " + rows[0].number);
+              if (rows[0].number > 0) {
+                return done(null, false, req.flash('signupMessage', 'Manager already exists for that department.'));
+              } else {
+                // find a user whose email is the same as the forms email
+                // we are checking to see if the user trying to login already exists
+                connection.query("SELECT * FROM users WHERE username = ?",[username], function(err, rows) {
+                    if (err)
+                        return done(err);
+                    if (rows.length) {
+                        return done(null, false, req.flash('signupMessage', 'That username is already taken.'));
+                    } else {
+                        // if there is no user with that username
+                        // create the user
+                        var newUserMysql = {
+                            username: username,
+                            password: bcrypt.hashSync(password, null, null),  // use the generateHash function in our user model
+                            name: req.body.name,
+                            title: req.body.title,
+                            dept: req.body.dept
+                        };
 
-                    var insertQuery = "INSERT INTO users ( username, password, name, title, dept ) values (?,?,?,?,?)";
+                        var insertQuery = "INSERT INTO users ( username, password, name, title, dept ) values (?,?,?,?,?)";
 
-                    connection.query(insertQuery,[newUserMysql.username, newUserMysql.password, newUserMysql.name, newUserMysql.title, newUserMysql.dept],function(err, rows) {
-                        if (err) throw err;
-                        newUserMysql.id = rows.insertId;
-
-                        if (req.body.isManager == "on") {
-                          var insertManagerQuery = "INSERT INTO managers ( user_id, dept ) values (?,?)";
-
-                          connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
+                        connection.query(insertQuery,[newUserMysql.username, newUserMysql.password, newUserMysql.name, newUserMysql.title, newUserMysql.dept],function(err, rows) {
                             if (err) throw err;
-                          });
-                        }
+                            newUserMysql.id = rows.insertId;
 
-                        return done(null, newUserMysql);
-                    });
-                }
+                            if (req.body.isManager == "on") {
+                              var insertManagerQuery = "INSERT INTO managers ( user_id, dept ) values (?,?)";
+
+                              connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
+                                if (err) throw err;
+
+                                checkForSubordinates(newUserMysql, newUserMysql.id);
+                              });
+                            }
+
+                            return done(null, newUserMysql);
+                        });
+                    }
+                });
+              }
             });
         })
     );
@@ -117,6 +139,9 @@ module.exports = function(passport) {
                 // if the user is found but the password is wrong
                 if (!bcrypt.compareSync(password, rows[0].password))
                     return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
+
+                // Add new users to manager if need be
+                // checkForSubordinates(rows[0], rows[0].user_id);
 
                 // all is well, return successful user
                 return done(null, rows[0]);
