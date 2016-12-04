@@ -6,6 +6,18 @@ module.exports = function(app, passport) {
 	var connection = mysql.createConnection(dbconfig.connection, {multipleStatements: true});
 	var moment = require('moment');
 
+	function getParameterByName(name, url) {
+		    if (!url) {
+		      url = window.location.href;
+		    }
+		    name = name.replace(/[\[\]]/g, "\\$&");
+		    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		        results = regex.exec(url);
+		    if (!results) return null;
+		    if (!results[2]) return '';
+		    return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+	
 	// =====================================
 	// HOME PAGE (with login links) ========
 	// =====================================
@@ -211,7 +223,7 @@ module.exports = function(app, passport) {
 				else {
 					// adds an invite
 					connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
-					VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 0], function(err, result){
+					VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 1], function(err, result){
 							if (err)
 								return console.log(err);
 							console.log('Invited!');
@@ -261,17 +273,6 @@ module.exports = function(app, passport) {
 	// INVITE ==============================
 	// =====================================
 	app.get('/calendar/invite', isLoggedIn, function(req, res) {
-		function getParameterByName(name, url) {
-		    if (!url) {
-		      url = window.location.href;
-		    }
-		    name = name.replace(/[\[\]]/g, "\\$&");
-		    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-		        results = regex.exec(url);
-		    if (!results) return null;
-		    if (!results[2]) return '';
-		    return decodeURIComponent(results[2].replace(/\+/g, " "));
-		}
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
 		  	 // get all users to be able to invite any user
@@ -361,7 +362,38 @@ module.exports = function(app, passport) {
 				}
 		});
 	});
-
+	
+	
+	// =====================================
+	// MANAGER =============================
+	// =====================================
+	app.get('/manager', isLoggedIn, function(req, res){
+		var manager_id = getParameterByName('manager_id', req.url);
+		
+		// gets lists of subordinates
+		connection.query("SELECT u.user_id, u.name FROM " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "manages m WHERE \
+						  m.user_id=u.user_id AND \
+						  m.manager_id=?", [manager_id], function(err, rows){
+			if (err){
+				console.log(err);
+			}
+			else{
+				var subsList = [];
+	     		for(var i = 0 ; i < rows.length ; i++){
+	     			var subs_info = {
+	     				user_id : rows[i].user_id,
+	     				name : rows[i].name
+	     			};
+	     			subsList.push(subs_info);
+	     		}
+	     		
+	     		res.render('manager.ejs', {
+	     			subsList : subsList 
+	     		});
+			}
+		});
+		
+	});
 };
 
 // route middleware to make sure
@@ -374,7 +406,6 @@ function isLoggedIn(req, res, next) {
 	// if they aren't redirect them to the home page
 	res.redirect('/');
 };
-
 
 // helper method for GET url parameters
 // source: https://www.sitepoint.com/get-url-parameters-with-javascript/

@@ -57,12 +57,13 @@ connection.query('\
 CREATE TABLE IF NOT EXISTS`' + dbconfig.database + '`.`' + dbconfig.manages_table + '` ( \
   `manager_id` INT NOT NULL, \
   `user_id` INT NOT NULL, \
-  PRIMARY KEY (`manager_id`), \
   CONSTRAINT `manager_id` \
     FOREIGN KEY (`manager_id`) \
     REFERENCES `' + dbconfig.database + '`.`' + dbconfig.users_table + '` (`user_id`) \
     ON DELETE CASCADE \
-    ON UPDATE CASCADE \
+    ON UPDATE CASCADE, \
+  CONSTRAINT `manager_employee` \
+    PRIMARY KEY (`manager_id`,`user_id`) \
 )');
 
 // Schedules
