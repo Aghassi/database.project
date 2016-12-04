@@ -18,9 +18,9 @@ module.exports = function(passport) {
 
       // Check for people who the manager manages
       if (signup) {
-        queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ?";
+        queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ? AND u.user_id!=?";
 
-        connection.query(queryUsers, [manager.dept], function(err, rows) {
+        connection.query(queryUsers, [manager.dept, id], function(err, rows) {
           console.log("Users in same department: " + rows);
           for (var i = 0; i < rows.length; i++) {
             connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
