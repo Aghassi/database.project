@@ -101,9 +101,7 @@ module.exports = function(app, passport) {
 
 	// accept/decline to event invites within profile page
 	app.post('/profile', isLoggedIn, function(req, res) {
-		connection.query("UPDATE " + dbconfig.database + ".invites \
-		SET status=?\
-		WHERE event_id=? AND employee=?", [req.body.status, req.body.event_id, req.user.user_id], function(err, rows) {
+		connection.query("UPDATE " + dbconfig.database + ".invites SET status=? WHERE event_id=? AND employee=?", [req.body.status, req.body.event_id, req.user.user_id], function(err, rows) {
 			if (err){
 				res.redirect(500, '/profile');
 				console.log(err);	
