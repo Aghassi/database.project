@@ -182,7 +182,7 @@ module.exports = function(app, passport) {
 	app.get('/calendar', isLoggedIn, function (req, res) {
 
 		// populates a user's calendar with their events
-		connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_creator=? OR event_owner=?", [req.user.user_id, req.user.user_id], function(err, rows) {
+		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + ".invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.user.user_id], function(err, rows) {
 
 			if (err)
 			return console.log(err);
