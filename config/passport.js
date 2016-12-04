@@ -29,7 +29,7 @@ module.exports = function(passport) {
           }
         });
       } else {
-        queryUsers = "SELECT u.user_id FROM users u LEFT JOIN manages m ON u.user_id = m.user_id WHERE m.user_id IS NULL AND u.user_id != ? u.dept = ?";
+        queryUsers = "SELECT u.user_id FROM users u LEFT JOIN manages m ON u.user_id = m.user_id WHERE m.user_id IS NULL AND u.user_id != ? AND u.dept = ?";
 
         connection.query(queryUsers, [id, manager.dept], function(err, rows) {
           console.log("Users in same department not yet added: " + rows);
