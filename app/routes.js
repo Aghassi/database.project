@@ -242,18 +242,23 @@ module.exports = function(app, passport) {
 				if (err)
 					return console.log(err);
 				else {
-					// adds an invite
-					connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
-					VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 1], function(err, result){
-							if (err)
-								return console.log(err);
-							console.log('Invited!');
-						});
-
-					console.log('Added!');
+					// adds to schedules table
+					connection.query("INSERT INTO " + dbconfig.database + "." + "schedules VALUES (LAST_INSERT_ID(),?)", [req.user.user_id], function(err, rows) {
+					    if (err)
+							return console.log(err);
+						else{
+							// adds an invite
+							connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
+							VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 1], function(err, result){
+									if (err)
+										return console.log(err);
+									console.log('Invited!');
+							});
+						}
+					})
+					
 				}
 			});
-
 
 		res.redirect('/calendar');
 	});
@@ -432,9 +437,16 @@ module.exports = function(app, passport) {
 						console.log(err);
 					}
 					else{
-						res.render('manager-aggregate.ejs', {
-							deptHours : rows[0].deptHours
-						});
+						if(rows[0].deptHours){
+							res.render('manager-aggregate.ejs', {
+								deptHours : rows[0].deptHours
+							});
+						}
+						else{
+							res.render('manager-aggregate.ejs', {
+								deptHours : -1
+							});
+						}
 					}
 				});
 		    }
