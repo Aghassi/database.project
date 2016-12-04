@@ -444,7 +444,7 @@ module.exports = function(app, passport) {
 						}
 						else{
 							res.render('manager-aggregate.ejs', {
-								deptHours : -1
+								deptHours : 0
 							});
 						}
 					}
