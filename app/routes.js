@@ -91,10 +91,24 @@ module.exports = function(app, passport) {
 					user_events.push(event);
 				}
 			}
-			res.render('profile.ejs', {
-				user : req.user, // get the user out of session and pass to template
-				user_events : user_events
+			
+			var is_manager;
+			connection.query("SELECT * FROM " + dbconfig.database + ".users u JOIN "+ dbconfig.database +".managers m ON u.user_id=m.user_id AND u.dept=m.dept WHERE u.user_id=?", [req.user.user_id], function(err, result) {
+				if (err)
+					return console.log(err);
+				if (result.length) {
+					is_manager = true;
+				} else {
+					is_manager = false;
+				}
+				
+				res.render('profile.ejs', {
+					user : req.user, // get the user out of session and pass to template
+					user_events : user_events,
+					is_manager : is_manager
+				});
 			});
+
 
 		});
 	});
