@@ -13,7 +13,7 @@ connection.query('USE ' + dbconfig.database);
 // expose this function to our app using module.exports
 module.exports = function(passport) {
 
-    var checkForSubordinates = function(manager, id) {
+    var addSubordinates = function(manager, id) {
       // Check for people who the manager manages
       var queryUsers = "SELECT u.user_id, u.dept FROM users u, managers m WHERE m.user_id != u.user_id AND u.dept = ?";
       connection.query(queryUsers, [manager.dept], function(err, rows) {
@@ -65,12 +65,6 @@ module.exports = function(passport) {
             passReqToCallback : true // allows us to pass back the entire request to the callback
         },
         function(req, username, password, done) {
-            // Check that we don't have more than one manager for the department
-            connection.query("SELECT COUNT(user_id) as number FROM managers WHERE dept = ?", req.body.dept, function(err, rows) {
-              console.log("Number of managers: " + rows[0].number);
-              if (rows[0].number > 0) {
-                return done(null, false, req.flash('signupMessage', 'Manager already exists for that department.'));
-              } else {
                 // find a user whose email is the same as the forms email
                 // we are checking to see if the user trying to login already exists
                 connection.query("SELECT * FROM users WHERE username = ?",[username], function(err, rows) {
@@ -78,6 +72,15 @@ module.exports = function(passport) {
                         return done(err);
                     if (rows.length) {
                         return done(null, false, req.flash('signupMessage', 'That username is already taken.'));
+                    }
+                    // Check if manager already exists
+                    if (req.body.isManager == "on") {
+                      connection.query("SELECT COUNT(user_id) as number FROM managers WHERE dept = ?", req.body.dept, function(err, rows) {
+                        console.log("Number of managers: " + rows[0].number);
+                        if (rows[0].number > 0) {
+                          return done(null, false, req.flash('signupMessage', 'Manager already exists for that department.'));
+                        }
+                      });
                     } else {
                         // if there is no user with that username
                         // create the user
@@ -101,7 +104,7 @@ module.exports = function(passport) {
                               connection.query(insertManagerQuery, [newUserMysql.id, newUserMysql.dept], function(err, rows) {
                                 if (err) throw err;
 
-                                checkForSubordinates(newUserMysql, newUserMysql.id);
+                                addSubordinates(newUserMysql, newUserMysql.id);
                               });
                             }
 
@@ -109,8 +112,6 @@ module.exports = function(passport) {
                         });
                     }
                 });
-              }
-            });
         })
     );
 
@@ -141,7 +142,12 @@ module.exports = function(passport) {
                     return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
 
                 // Add new users to manager if need be
-                // checkForSubordinates(rows[0], rows[0].user_id);
+                var user = rows[0];
+                connection.query("SELECT COUNT(user_id) as number FROM managers WHERE user_id = ?", rows[0].user_id, function(err, rows){
+                  if (rows[0].number === 1) {
+                    addSubordinates(user, user.user_id);
+                  }
+                });
 
                 // all is well, return successful user
                 return done(null, rows[0]);
