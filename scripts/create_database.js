@@ -85,13 +85,14 @@ CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.invites_table + '` ( \
   `event_id` INT NOT NULL, \
   `employee` INT NULL, \
   `status` CHAR(1) NULL, \
-  PRIMARY KEY (`event_id`), \
   INDEX `user_id_idx` (`employee` ASC), \
   CONSTRAINT `employee` \
     FOREIGN KEY (`employee`) \
     REFERENCES `' + dbconfig.database + '`.`' + dbconfig.users_table + '` (`user_id`) \
     ON DELETE CASCADE \
-    ON UPDATE CASCADE \
+    ON UPDATE CASCADE, \
+  CONSTRAINT `event_employee` \
+    PRIMARY KEY (`event_id`,`employee`) \
 )');
 
 console.log('Success: Database Created!')

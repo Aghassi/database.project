@@ -243,7 +243,7 @@ module.exports = function(app, passport) {
 	// delete an event
 	app.post('/calendar/deleteevent', isLoggedIn, function(req, res){
 
-		// updates user info
+		// delete this event
 		connection.query("DELETE FROM " + dbconfig.database + "." + "events WHERE event_id=?",
 		[req.body.event_id], function(err, result){
 				if (err)
@@ -309,13 +309,19 @@ module.exports = function(app, passport) {
 								}
 				     		}
 				     	}
-
-				     	res.render('calendar-invite.ejs', {
-			     			user: req.user,
-			     			usersList : usersList,
-			     			invitesList : invitesList,
-			     			event_id : event_id
-			     		});
+				     	
+				     	connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_id=?", [event_id], function(err, rows){
+				     		if (err)
+					     		return console.log(err);
+					     	if (rows.length) {
+					     		res.render('calendar-invite.ejs', {
+					     			user: req.user,
+					     			usersList : usersList,
+					     			invitesList : invitesList,
+					     			event : rows
+					     		});
+					     	}
+				     	});
 		     		});
 		     	}
 		     });
@@ -326,16 +332,35 @@ module.exports = function(app, passport) {
 		}
 	});
 
-	// // show the invite form
-	// app.get('/invite-new', isLoggedIn, function(req, res){
-	// 	res.render('invite-new.ejs', { message: req.flash('signupMessage') });
-	// });
-	// // process the invite form
-	// app.post('/invite-new', passport.authenticate('local-signup', {
-	// 	successRedirect : '/profile', // redirect to the secure profile section
-	// 	failureRedirect : '/signup', // redirect back to the signup page if there is an error
-	// 	failureFlash : true // allow flash messages
-	// }));
+	app.post('/calendar/invite/add', isLoggedIn, function(req, res){
+
+		// adds an invite to a given event
+		connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
+		VALUES (?, ?, ?)", [req.body.event_id, req.body.user_id, 0], function(err, result) {
+			if (err){
+				res.redirect(500, '/calendar/invite?event_id='+req.body.event_id);
+				console.log(err);	
+			}
+			else {
+				res.redirect('/calendar/invite?event_id='+req.body.event_id);
+			}	
+		});
+	});
+	
+	app.post('/calendar/invite/delete', isLoggedIn, function(req, res){
+
+		// deletes an invite
+		connection.query("DELETE FROM " + dbconfig.database + "." + "invites WHERE event_id=? AND employee=?",
+		[req.body.event_id, req.body.user_id], function(err, result){
+				if (err){
+					res.redirect(500, '/calendar/invite?event_id='+req.body.event_id);
+					console.log(err);
+				}
+				else{
+					res.redirect('/calendar/invite?event_id='+req.body.event_id);
+				}
+		});
+	});
 
 };
 

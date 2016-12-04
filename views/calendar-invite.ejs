@@ -40,7 +40,7 @@
                  <td><%= cdToString(invitesList[i].status) %></td>
                  <td>
                   <form action="/calendar/invite/delete" method="POST">
-                      <input type="hidden" name="event_id" value="<%= event_id %>" />
+                      <input type="hidden" name="event_id" value="<%= event[0].event_id %>" />
                       <input type="hidden" name="user_id" value="<%= invitesList[i].employee %>" />
                       <input type="submit" class="btn btn-danger" value="Delete Invite" />
                   </form>
@@ -51,12 +51,13 @@
     </table>
 
 	<form enctype="application/json" action="/calendar/invite/add" method="POST" >
-    <h2 class="">Invite User to ''</h2>
+    <h2 class="">Invite User to <%= event[0].title %></h2>
     <input type="text" id="search" placeholder="Employee Name"></input>
+    <input name="user_id" type="hidden" id="user_id"></input>
     <div id="lists">
     </div>
-    <input name="event_id" type="hidden" class="form-control" value="<%= event_id %>"><br>
-    <input type="submit" class="btn btn-default" value="Submit"/>
+    <input name="event_id" type="hidden" class="form-control" value="<%= event[0].event_id %>"><br>
+    <input type="submit" class="btn btn-default" value="Invite Employee"/>
   </form>
 </div>
 </body>
@@ -105,8 +106,12 @@
         });
 
         function completeSearch(value){
-            console.log(value);
             $('#search').val(value);
+            for(var i = 0; i < list.length ; i++){
+                if(list[i].name === value){
+                    $('#user_id').val(list[i].user_id);
+                }
+            }
         }
     </script>
 </html>
