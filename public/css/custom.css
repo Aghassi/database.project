@@ -1,0 +1,14 @@
+#search {
+    width: 400px;
+}
+
+.userlist {
+    list-style-type: none;
+    margin-top: 6px;
+    width: 400px
+}
+
+.userlist:hover {
+    cursor: pointer;
+    background-color: #e2e2e2;
+}

@@ -301,19 +301,18 @@ module.exports = function(app, passport) {
 				     				employee : rows[i].employee,
 				     				status : rows[i].status
 				     			};
-
-									if (invite_info.employee == user_info[i].user_id) {
-										invite_info.name = user_info[i].name;
+								for(var j = 0 ; j < usersList.length ; j++){
+									if (invite_info.employee === usersList[j].user_id) {
+										invite_info.name = usersList[j].name;
 										invitesList.push(invite_info);
-									}
+									}	
+								}
 				     		}
 				     	}
 
-				     	// hits here, but doesn't display the page...why?
-				     	console.log('hit');
-
 				     	res.render('calendar-invite.ejs', {
 			     			user: req.user,
+			     			usersList : usersList,
 			     			invitesList : invitesList,
 			     			event_id : event_id
 			     		});
