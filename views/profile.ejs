@@ -65,7 +65,7 @@
 							<% if (user_events[i].status == '1') { %>
 							<form action="/profile" method="POST">
 							<input type="hidden" name="event_id" value="<%= user_events[i].id %>" />
-							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %><br>
+							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %>
 							<button name="status" type="submit" class="btn-xs btn-danger" value="0">Cancel</button>
 							</li>
 							</form>
@@ -89,7 +89,7 @@
 							<% if (user_events[i].status == '2') { %>
 							<form action="/profile" method="POST">
 							<input type="hidden" name="event_id" value="<%= user_events[i].id %>" />
-							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %><br> <button name="status" type="submit" class="btn-xs btn-danger" value="0">Cancel decline</button>
+							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %> <button name="status" type="submit" class="btn-xs btn-danger" value="0">Cancel decline</button>
 							</li>
 							</form>
 							<% } %>
