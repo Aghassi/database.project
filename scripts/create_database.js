@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS`' + dbconfig.database + '`.`' + dbconfig.managers_tab
 connection.query('\
 CREATE TABLE IF NOT EXISTS`' + dbconfig.database + '`.`' + dbconfig.events_table + '` ( \
   `event_id` INT NOT NULL AUTO_INCREMENT, \
-  `creator` INT NOT NULL, \
+  `event_creator` INT NOT NULL, \
+  `event_owner` INT NOT NULL, \
   `start_time` DATETIME NOT NULL, \
   `end_time` DATETIME NOT NULL, \
   `title` NVARCHAR(20) NOT NULL, \
