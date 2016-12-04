@@ -72,9 +72,8 @@ module.exports = function(app, passport) {
 	// we will want this protected so you have to be logged in to visit
 	// we will use route middleware to verify this (the isLoggedIn function)
 	app.get('/profile', isLoggedIn, function(req, res) {
-		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + "." + "invites i ON e.event_id = i.event_id WHERE employee=?"
+		connection.query("SELECT e.event_id, e.title, e.description, e.start_time, e.end_time, u.username, i.status FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + "." + "invites i JOIN " + dbconfig.database + ".users u ON e.event_id = i.event_id and e.event_creator=u.user_id WHERE employee=?"
 						, [req.user.user_id], function(err, results) {
-
 			var user_events = [];
 			if (err)
 				return console.log(err);
@@ -82,14 +81,12 @@ module.exports = function(app, passport) {
 				for (var i = 0; i < results.length; i++) {
 					var event = {
 						id : results[i].event_id,
-						event_creator : results[i].event_creator,
-						event_owner : results[i].event_owner,
-						start : results[i].start_time,
-						end : results[i].end_time,
 						title : results[i].title,
 						description : results[i].description,
-						created_date : results[i].created_date
-						// status : results[i].status
+						start_time : results[i].start_time,
+						end_time : results[i].end_time,
+						username : results[i].username,
+						status : results[i].status
 					};
 					user_events.push(event);
 				}
