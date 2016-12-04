@@ -1,3 +1,7 @@
+.fc-event{
+    cursor: pointer;
+}
+
 #search {
     width: 400px;
 }

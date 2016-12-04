@@ -40,7 +40,7 @@
 					<ul>
 						<% for (var i = 0; i < user_events.length; i++) { %>
 							<% if (user_events[i].status != '0') { %>
-							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].creator %>
+							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].event_creator %>
 							</li>
 							<% } %>
 						<% } %>
@@ -59,7 +59,7 @@
 					<ul>
 						<% for (var i = 0; i < user_events.length; i++) { %>
 							<% if (user_events[i].status == '0') { %>
-							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].creator %>
+							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].event_creator %>
 							</li>
 							<% } %>
 						<% } %>
