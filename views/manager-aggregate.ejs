@@ -17,20 +17,43 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6">
-            <center><h3>Number of Hours Scheduled in <% %> Department:</h3></center>
-            <center><h4><b><%= deptHours %></b></h4></center>
+            <center><h3>Number of Hours Scheduled in <%= dept %> Department:</h3></center>
+            <center><h4><b><%= deptHours %> hours</b></h4></center>
             <pre>
 SELECT SUM(hours) as deptHours FROM
     (SELECT TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours FROM 
         (SELECT s.event_id FROM schedules s, users u 
-        WHERE u.dept='QA' AND s.employee_id = u.user_id
+        WHERE u.dept='?' AND s.employee_id = u.user_id
         )deptEvents, events e
     WHERE e.event_id = deptEvents.event_id) a;
             </pre>
         </div>
         
         <div class="col-md-6">
-            
+            <center><h3>Subordinates' Declined Events</h3></center>
+            <pre>
+SELECT u.name, e.title, e.description
+    FROM users u, events e, invites i 
+    WHERE i.employee=u.user_id AND i.status=2 AND 
+          i.event_id=e.event_id AND u.dept='?'
+            </pre>
+            <table class="table">
+                <tr>
+                    <th>Employee</th>
+                    <th>Event Title</th>
+                    <th>Event Description</th>
+                </tr>
+        
+                <% if (subDeclinesList) { %>
+                    <% for (var i = 0; i < subDeclinesList.length; i++) { %>
+                    <tr>
+                         <td><%= subDeclinesList[i].name %></td>
+                         <td><%= subDeclinesList[i].title %></td>
+                         <td><%= subDeclinesList[i].description %></td>
+                    </tr>
+                    <% } %>
+               <% } %>
+            </table>
         </div>
     </div>
 </div>

@@ -423,7 +423,7 @@ module.exports = function(app, passport) {
 	});
 	
 	app.post('/manager/aggregate', isLoggedIn, function(req, res) {
-		var query = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from " + dbconfig.database + "." + "schedules s, " + dbconfig.database + "." + "users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, " + dbconfig.database + "." + "events e  where e.event_id = deptEvents.event_id) a;"
+		var deptHoursQuery = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from " + dbconfig.database + "." + "schedules s, " + dbconfig.database + "." + "users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, " + dbconfig.database + "." + "events e  where e.event_id = deptEvents.event_id) a;"
 		
 		// get dept from manager_id
 		connection.query("SELECT dept FROM " + dbconfig.database + "." + "managers where user_id=?", [req.body.manager_id], function(err, rows) {
@@ -431,24 +431,53 @@ module.exports = function(app, passport) {
 		    	console.log(err);
 		    }
 		    else{
-		    	// gets total hours of work scheduled in manager's department
-				connection.query(query, [rows[0].dept], function(err, rows) {
-				    if (err){
-						console.log(err);
-					}
-					else{
-						if(rows[0].deptHours){
-							res.render('manager-aggregate.ejs', {
-								deptHours : rows[0].deptHours
-							});
-						}
-						else{
-							res.render('manager-aggregate.ejs', {
-								deptHours : 0
-							});
-						}
-					}
-				});
+		    	var dept = rows[0].dept;
+		    	
+		    	// gets subordinates who have decline events
+		    	var subDeclinesQuery = "select u.name, e.title, e.description from " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "events e, " + dbconfig.database + "." + "invites i where i.employee=u.user_id AND i.status=2 AND i.event_id=e.event_id AND u.dept=?";
+		    	
+		    	connection.query(subDeclinesQuery, [dept], function(err, rows) {
+		    		if(err){
+		    	   		console.log(err);
+		    		}
+		    		else{
+			    		var subDeclinesList = [];
+			     		for(var i = 0 ; i < rows.length ; i++){
+			     			var subDeclines_info = {
+			     				name : rows[i].name,
+			     				title : rows[i].title,
+			     				description : rows[i].description
+			     			};
+			     			subDeclinesList.push(subDeclines_info);
+			     		}
+			     		
+			     		// gets total hours of work scheduled in manager's department
+						connection.query(deptHoursQuery, [dept], function(err, rows) {
+						    if (err){
+								console.log(err);
+							}
+							else{
+								var deptHours = rows[0].deptHours;
+								if(deptHours){
+									res.render('manager-aggregate.ejs', {
+										dept : dept,
+										subDeclinesList : subDeclinesList,
+										deptHours : deptHours
+									});
+								}
+								else{
+									res.render('manager-aggregate.ejs', {
+										dept : dept,
+										subDeclinesList : subDeclinesList,
+										deptHours : 0
+									});
+								}
+							}
+						});
+		    		}
+		    	});
+		    	
+		    	
 		    }
 		});
 	});
