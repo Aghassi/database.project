@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+	<title>EECS 341 Authentication Calendar</title>
+	<!-- bootstrap CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/custom.css">
+    <script src='/js/jquery.min.js'></script>
+    <script src='/js/underscore-min.js'></script>
+    <script src='/js/fuzzy-min.js'></script>
+    <style>
+		body 		{ padding-top:80px; word-wrap:break-word; }
+	</style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <center><h3>Number of Hours Scheduled in <% %> Department:</h3></center>
+            <center><h4><b><%= deptHours %></b></h4></center>
+            <pre>
+SELECT SUM(hours) as deptHours FROM
+    (SELECT TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours FROM 
+        (SELECT s.event_id FROM schedules s, users u 
+        WHERE u.dept='QA' AND s.employee_id = u.user_id
+        )deptEvents, events e
+    WHERE e.event_id = deptEvents.event_id) a;
+            </pre>
+        </div>
+        
+        <div class="col-md-6">
+            
+        </div>
+    </div>
+</div>
+</body>
+</html>

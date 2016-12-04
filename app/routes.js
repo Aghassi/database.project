@@ -407,13 +407,38 @@ module.exports = function(app, passport) {
 	     			};
 	     			subsList.push(subs_info);
 	     		}
-	     		
+	     		console.log(manager_id);
 	     		res.render('manager.ejs', {
+	     			manager_id : manager_id,
 	     			subsList : subsList 
 	     		});
 			}
 		});
 		
+	});
+	
+	app.post('/manager/aggregate', isLoggedIn, function(req, res) {
+		var query = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from " + dbconfig.database + "." + "schedules s, " + dbconfig.database + "." + "users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, " + dbconfig.database + "." + "events e  where e.event_id = deptEvents.event_id) a;"
+		
+		// get dept from manager_id
+		connection.query("SELECT dept FROM " + dbconfig.database + "." + "managers where user_id=?", [req.body.manager_id], function(err, rows) {
+		    if (err){
+		    	console.log(err);
+		    }
+		    else{
+		    	// gets total hours of work scheduled in manager's department
+				connection.query(query, [rows[0].dept], function(err, rows) {
+				    if (err){
+						console.log(err);
+					}
+					else{
+						res.render('manager-aggregate.ejs', {
+							deptHours : rows[0].deptHours
+						});
+					}
+				});
+		    }
+		});
 	});
 };
 

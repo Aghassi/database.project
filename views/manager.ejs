@@ -16,14 +16,19 @@
 <body>
 <div class="container">
     <a style="margin-bottom:18px" class="btn btn-default" href="/profile">Return to Profile</a>
-    
+    <form align="right" enctype="application/json" action="/manager/aggregate" method="POST" >
+    <input name="manager_id" type="hidden" value="<%= manager_id %>"></input>
+    <input type="submit" class="btn btn-default" value="Aggregate Data"/>
+    </form>
+	
+	
 	<form enctype="application/json" action="/manager/calendar" method="POST" >
-    <h2 class="">Choose a Subordinate Calendar</h2>
+    <h2 class="">Choose a Subordinate</h2>
     <input type="text" id="search" placeholder="Employee Name"></input>
     <input name="user_id" type="hidden" id="user_id"></input>
     <div id="lists">
     </div>
-    <input style="margin-top:18px" type="submit" class="btn btn-default" value="Go To Employee Calendar"/>
+    <input style="margin-top:18px" type="submit" class="btn btn-default" value="Go To Subordinate Calendar"/>
   </form>
 </div>
 </body>
