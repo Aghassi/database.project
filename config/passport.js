@@ -29,9 +29,9 @@ module.exports = function(passport) {
           }
         });
       } else {
-        queryUsers = "SELECT u.user_id FROM users u LEFT JOIN manages m ON u.user_id = m.user_id AND u.dept = ? WHERE m.user_id IS NULL";
+        queryUsers = "SELECT u.user_id FROM users u LEFT JOIN manages m ON u.user_id = m.user_id AND u.dept = ? WHERE m.user_id IS NULL AND u.user_id != ?";
 
-        connection.query(queryUsers, [manager.dept], function(err, rows) {
+        connection.query(queryUsers, [manager.dept, id], function(err, rows) {
           console.log("Users in same department not yet added: " + rows);
           for (var i = 0; i < rows.length; i++) {
             connection.query("INSERT INTO manages ( manager_id, user_id ) values (?,?)", [id, rows[i].user_id], function(err,rows){
