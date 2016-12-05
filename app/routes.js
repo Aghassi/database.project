@@ -461,6 +461,7 @@ module.exports = function(app, passport) {
 								var deptHours = rows[0].deptHours;
 								if(deptHours){
 									res.render('manager-aggregate.ejs', {
+										manager_id : req.body.manager_id,
 										dept : dept,
 										subDeclinesList : subDeclinesList,
 										deptHours : deptHours
@@ -468,6 +469,7 @@ module.exports = function(app, passport) {
 								}
 								else{
 									res.render('manager-aggregate.ejs', {
+										manager_id : req.body.manager_id,
 										dept : dept,
 										subDeclinesList : subDeclinesList,
 										deptHours : 0
