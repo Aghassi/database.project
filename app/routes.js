@@ -17,7 +17,7 @@ module.exports = function(app, passport) {
 		    if (!results[2]) return '';
 		    return decodeURIComponent(results[2].replace(/\+/g, " "));
 	}
-	
+
 	// =====================================
 	// HOME PAGE (with login links) ========
 	// =====================================
@@ -91,7 +91,7 @@ module.exports = function(app, passport) {
 					user_events.push(event);
 				}
 			}
-			
+
 			var is_manager;
 			connection.query("SELECT * FROM " + dbconfig.database + ".users u JOIN "+ dbconfig.database +".managers m ON u.user_id=m.user_id AND u.dept=m.dept WHERE u.user_id=?", [req.user.user_id], function(err, result) {
 				if (err)
@@ -101,7 +101,7 @@ module.exports = function(app, passport) {
 				} else {
 					is_manager = false;
 				}
-				
+
 				res.render('profile.ejs', {
 					user : req.user, // get the user out of session and pass to template
 					user_events : user_events,
@@ -118,11 +118,11 @@ module.exports = function(app, passport) {
 		connection.query("UPDATE " + dbconfig.database + ".invites SET status=? WHERE event_id=? AND employee=?", [req.body.status, req.body.event_id, req.user.user_id], function(err, rows) {
 			if (err){
 				res.redirect(500, '/profile');
-				console.log(err);	
+				console.log(err);
 			}
 			else {
 				res.redirect('/profile');
-			}	
+			}
 		});
 
 	});
@@ -256,7 +256,7 @@ module.exports = function(app, passport) {
 							});
 						}
 					})
-					
+
 				}
 			});
 
@@ -302,7 +302,7 @@ module.exports = function(app, passport) {
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
 		  	 // get all users to be able to invite any user
-		     connection.query("SELECT user_id, name, title, dept FROM " + dbconfig.database + "." + "users", function(err, rows) {
+		     connection.query("SELECT * FROM " + dbconfig.database + "." + "users u LEFT JOIN " + dbconfig.database + "." + "invites i ON u.user_id = i.employee WHERE i.employee IS NULL", function(err, rows) {
 		     	if (err)
 		     		return console.log(err);
 		     	if (rows.length) {
@@ -312,7 +312,7 @@ module.exports = function(app, passport) {
 		     				user_id : rows[i].user_id,
 		     				name : rows[i].name,
 		     				title : rows[i].title,
-		     				dept : rows[i].dept,
+		     				dept : rows[i].dept
 		     			};
 		     			usersList.push(user_info);
 		     		}
@@ -323,20 +323,25 @@ module.exports = function(app, passport) {
 				     		return console.log(err);
 				     	if (rows.length) {
 				     		var invitesList = [];
+								var tempInvitesList = [];
+
 				     		for(var i = 0 ; i < rows.length ; i++){
 				     			var invite_info = {
 				     				employee : rows[i].employee,
 				     				status : rows[i].status
 				     			};
-								for(var j = 0 ; j < usersList.length ; j++){
-									if (invite_info.employee === usersList[j].user_id) {
-										invite_info.name = usersList[j].name;
-										invitesList.push(invite_info);
-									}	
-								}
+
+									tempInvitesList.push(invite_info);
 				     		}
+								
+								for(var j = 0 ; j < usersList.length ; j++){
+									if (tempInvitesList[j].employee === usersList[j].user_id) {
+										tempInvitesList[j].name = usersList[j].name;
+										invitesList.push(invite_info);
+									}
+								}
 				     	}
-				     	
+
 				     	connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_id=?", [event_id], function(err, rows){
 				     		if (err)
 					     		return console.log(err);
@@ -366,14 +371,14 @@ module.exports = function(app, passport) {
 		VALUES (?, ?, ?)", [req.body.event_id, req.body.user_id, 0], function(err, result) {
 			if (err){
 				res.redirect(500, '/calendar/invite?event_id='+req.body.event_id);
-				console.log(err);	
+				console.log(err);
 			}
 			else {
 				res.redirect('/calendar/invite?event_id='+req.body.event_id);
-			}	
+			}
 		});
 	});
-	
+
 	app.post('/calendar/invite/delete', isLoggedIn, function(req, res){
 
 		// deletes an invite
@@ -388,14 +393,14 @@ module.exports = function(app, passport) {
 				}
 		});
 	});
-	
-	
+
+
 	// =====================================
 	// MANAGER =============================
 	// =====================================
 	app.get('/manager', isLoggedIn, function(req, res){
 		var manager_id = getParameterByName('manager_id', req.url);
-		
+
 		// gets lists of subordinates
 		connection.query("SELECT u.user_id, u.name FROM " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "manages m WHERE \
 						  m.user_id=u.user_id AND \
@@ -415,16 +420,16 @@ module.exports = function(app, passport) {
 	     		console.log(manager_id);
 	     		res.render('manager.ejs', {
 	     			manager_id : manager_id,
-	     			subsList : subsList 
+	     			subsList : subsList
 	     		});
 			}
 		});
-		
+
 	});
-	
+
 	app.post('/manager/aggregate', isLoggedIn, function(req, res) {
 		var deptHoursQuery = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from " + dbconfig.database + "." + "schedules s, " + dbconfig.database + "." + "users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, " + dbconfig.database + "." + "events e  where e.event_id = deptEvents.event_id) a;"
-		
+
 		// get dept from manager_id
 		connection.query("SELECT dept FROM " + dbconfig.database + "." + "managers where user_id=?", [req.body.manager_id], function(err, rows) {
 		    if (err){
@@ -432,10 +437,10 @@ module.exports = function(app, passport) {
 		    }
 		    else{
 		    	var dept = rows[0].dept;
-		    	
+
 		    	// gets subordinates who have decline events
 		    	var subDeclinesQuery = "select u.name, e.title, e.description from " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "events e, " + dbconfig.database + "." + "invites i where i.employee=u.user_id AND i.status=2 AND i.event_id=e.event_id AND u.dept=?";
-		    	
+
 		    	connection.query(subDeclinesQuery, [dept], function(err, rows) {
 		    		if(err){
 		    	   		console.log(err);
@@ -450,7 +455,7 @@ module.exports = function(app, passport) {
 			     			};
 			     			subDeclinesList.push(subDeclines_info);
 			     		}
-			     		
+
 			     		// gets total hours of work scheduled in manager's department
 						connection.query(deptHoursQuery, [dept], function(err, rows) {
 						    if (err){
@@ -479,9 +484,9 @@ module.exports = function(app, passport) {
 		    }
 		});
 	});
-	
+
 	app.post('/manager/calendar', isLoggedIn, function(req, res) {
-	   
+
 	   // populates a calendar with the subordinate's events
 		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + ".invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.body.user_id], function(err, rows) {
 			if (err)
@@ -514,7 +519,7 @@ module.exports = function(app, passport) {
 				});
 			}
 		});
-	    
+
 	});
 };
 
