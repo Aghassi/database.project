@@ -303,12 +303,13 @@ module.exports = function(app, passport) {
 	app.get('/calendar/invite', isLoggedIn, function(req, res) {
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
+				var usersList = [];
+
 		  	 // get all users to be able to invite any user
 		     connection.query("SELECT * FROM users u LEFT JOIN invites i ON u.user_id = i.employee AND i.event_id =? WHERE i.employee IS NULL", [event_id], function(err, rows) {
 		     	if (err)
 		     		return console.log(err);
 		     	if (rows.length) {
-		     		var usersList = [];
 		     		for(var i = 0 ; i < rows.length ; i++){
 		     			var user_info = {
 		     				user_id : rows[i].user_id,
@@ -318,39 +319,39 @@ module.exports = function(app, passport) {
 		     			};
 		     			usersList.push(user_info);
 		     		}
+					}
 
-		     		// get list of current invites to the event
-		     		connection.query("SELECT employee, status, name FROM invites i JOIN users u ON u.user_id = i.employee WHERE event_id=?", [event_id], function(err, rows){
-		     			if (err)
+	     		// get list of current invites to the event
+	     		connection.query("SELECT employee, status, name FROM invites i JOIN users u ON u.user_id = i.employee WHERE event_id=?", [event_id], function(err, rows){
+	     			if (err)
+			     		return console.log(err);
+			     	if (rows.length) {
+			     		var invitesList = [];
+
+			     		for(var i = 0 ; i < rows.length ; i++){
+			     			var invite_info = {
+								name: rows[i].name,
+			     				employee : rows[i].employee,
+			     				status : rows[i].status
+			     			};
+
+								invitesList.push(invite_info);
+			     		}
+			     	}
+
+			     	connection.query("SELECT * FROM events WHERE event_id=?", [event_id], function(err, rows){
+			     		if (err)
 				     		return console.log(err);
 				     	if (rows.length) {
-				     		var invitesList = [];
-
-				     		for(var i = 0 ; i < rows.length ; i++){
-				     			var invite_info = {
-									name: rows[i].name,
-				     				employee : rows[i].employee,
-				     				status : rows[i].status
-				     			};
-
-									invitesList.push(invite_info);
-				     		}
+				     		res.render('calendar-invite.ejs', {
+				     			user: req.user,
+				     			usersList : usersList,
+				     			invitesList : invitesList,
+				     			event : rows
+				     		});
 				     	}
-
-				     	connection.query("SELECT * FROM events WHERE event_id=?", [event_id], function(err, rows){
-				     		if (err)
-					     		return console.log(err);
-					     	if (rows.length) {
-					     		res.render('calendar-invite.ejs', {
-					     			user: req.user,
-					     			usersList : usersList,
-					     			invitesList : invitesList,
-					     			event : rows
-					     		});
-					     	}
-				     	});
-		     		});
-		     	}
+			     	});
+	     		});
 		     });
 		}
 		else {
