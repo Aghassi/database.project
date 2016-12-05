@@ -34,29 +34,7 @@
 					</p>
 				</div>
 			</div>
-			<div class="col-sm-6">
-				<div class="well">
-					<h3><span class="fa fa-bell"></span> Notifications</h3>
-					<% if (user_events.length) { %>
-					<ul>
-						<% for (var i = 0; i < user_events.length; i++) { %>
-							<% if (user_events[i].status == '0') { %>
-							<form action="/profile" method="POST">
-							<input type="hidden" name="event_id" value="<%= user_events[i].id %>" />
-							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %> <button name="status" type="submit" class="btn-xs btn-success" value="1">Accept</button> <button name="status" type="submit" class="btn-xs btn-danger" value="2">Decline</button>
-							</li>
-							</form>
-							<% } %>
-						<% } %>
-					</ul>
-					<% } else { %>
-					<p>
-						If you have any invitations that you have not yet responded to, it will appear here.
-					</p>
-					<% } %>
-				</div>
-			</div>
-
+			
 			<div class="col-sm-6">
 				<div class="well">
 					<h3><span class="fa fa-calendar"></span> My Schedule</h3>
@@ -80,7 +58,10 @@
 					<% } %>
 				</div>
 			</div>
-
+		</div>
+			
+		<div class="row">
+			
 			<div class="col-sm-6">
 				<div class="well">
 					<h3><i class="fa fa-times-circle" aria-hidden="true"></i> Declined Events</h3>
@@ -103,7 +84,29 @@
 					<% } %>
 				</div>
 			</div>
-
+			
+			<div class="col-sm-6">
+				<div class="well">
+					<h3><span class="fa fa-bell"></span> Notifications</h3>
+					<% if (user_events.length) { %>
+					<ul>
+						<% for (var i = 0; i < user_events.length; i++) { %>
+							<% if (user_events[i].status == '0') { %>
+							<form action="/profile" method="POST">
+							<input type="hidden" name="event_id" value="<%= user_events[i].id %>" />
+							<li>"<%= user_events[i].title %> (# <%= user_events[i].id %>)" created by <%= user_events[i].username %>: <%= user_events[i].description %> <button name="status" type="submit" class="btn-xs btn-success" value="1">Accept</button> <button name="status" type="submit" class="btn-xs btn-danger" value="2">Decline</button>
+							</li>
+							</form>
+							<% } %>
+						<% } %>
+					</ul>
+					<% } else { %>
+					<p>
+						If you have any invitations that you have not yet responded to, it will appear here.
+					</p>
+					<% } %>
+				</div>
+			</div>
 		</div>
 	</div>
 </body>
