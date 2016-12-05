@@ -326,7 +326,7 @@ module.exports = function(app, passport) {
 
 				     		for(var i = 0 ; i < rows.length ; i++){
 				     			var invite_info = {
-										name: rows[i].name,
+									name: rows[i].name,
 				     				employee : rows[i].employee,
 				     				status : rows[i].status
 				     			};

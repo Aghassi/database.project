@@ -35,6 +35,7 @@
             <% } %>
             <% if (invitesList) { %>
             <% for (var i = 0; i < invitesList.length; i++) { %>
+            <% if(invitesList[i].name != user.name){ %>
             <tr>
                  <td><%= invitesList[i].name %></td>
                  <td><%= cdToString(invitesList[i].status) %></td>
@@ -46,6 +47,13 @@
                   </form>
                  </td>
             </tr>
+            <% } else { %>
+            <tr>
+                 <td><%= invitesList[i].name %></td>
+                 <td><%= cdToString(invitesList[i].status) %></td>
+                 <td></td>
+            </tr>
+            <% } %>
             <% } %>
        <% } %>
         
