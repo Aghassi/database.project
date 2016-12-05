@@ -476,10 +476,45 @@ module.exports = function(app, passport) {
 						});
 		    		}
 		    	});
-		    	
-		    	
 		    }
 		});
+	});
+	
+	app.post('/manager/calendar', isLoggedIn, function(req, res) {
+	   
+	   // populates a calendar with the subordinate's events
+		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + ".invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.body.user_id], function(err, rows) {
+			if (err)
+			return console.log(err);
+			if (rows.length) {
+				var results = [];
+				for(var i = 0 ; i < rows.length ; i++){
+					// create event object
+					// insert into results
+					// set events below to results
+					var event = {
+						id : rows[i].event_id,
+						title : rows[i].title,
+						start : rows[i].start_time,
+						end : rows[i].end_time,
+						description : rows[i].description,
+						created_date : rows[i].created_date
+					};
+					results.push(event);
+				}
+
+				res.render('manager-calendar.ejs', {
+					name: req.body.name,
+					results : results
+				});
+			} else {
+				res.render('manager-calendar.ejs', {
+					name: req.body.name,
+					results : []
+				});
+			}
+		});
+	    
 	});
 };
 

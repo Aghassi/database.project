@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+	<title>EECS 341 Authentication Calendar</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<link rel='stylesheet' href='/css/fullcalendar.css' />
+	<link rel="stylesheet" href="/css/custom.css">
+    <script src='/js/jquery.min.js'></script>
+    <script src='/js/moment.js'></script>
+    <script src='/js/fullcalendar.min.js'></script>
+    <script src='/js/bootstrap.min.js'></script>
+    <script src='/js/bootbox.min.js'></script>
+    <!-- datetime Picker -->
+	<link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/flatpickr"></script>
+    <script>
+        $(document).ready(function() {
+        
+        // page is now ready, initialize the calendar...
+        
+        $('#calendar').fullCalendar({
+            events : { events : <%- JSON.stringify(results) %> }
+        });
+        
+    }); 
+    </script> 
+    
+	<style>
+		body 		{ padding-top:10px; word-wrap:break-word; }
+        .fc-event{
+            cursor: text;
+        }
+	</style>
+</head>
+<body>
+<div class="container">
+<div class="page-header text-center">
+    <h1><span class="fa fa-anchor"></span><%= name %>'s Calendar</h1>
+</div>
+	<div id='calendar'></div>
+</div>
+</body>
+</html>
