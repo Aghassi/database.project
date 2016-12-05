@@ -6,6 +6,8 @@ module.exports = function(app, passport) {
 	var connection = mysql.createConnection(dbconfig.connection, {multipleStatements: true});
 	var moment = require('moment');
 
+	connection.query('USE ' + dbconfig.database);
+
 	function getParameterByName(name, url) {
 		    if (!url) {
 		      url = window.location.href;
@@ -72,7 +74,7 @@ module.exports = function(app, passport) {
 	// we will want this protected so you have to be logged in to visit
 	// we will use route middleware to verify this (the isLoggedIn function)
 	app.get('/profile', isLoggedIn, function(req, res) {
-		connection.query("SELECT e.event_id, e.title, e.description, e.start_time, e.end_time, u.username, i.status FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + "." + "invites i JOIN " + dbconfig.database + ".users u ON e.event_id = i.event_id and e.event_creator=u.user_id WHERE employee=?"
+		connection.query("SELECT e.event_id, e.title, e.description, e.start_time, e.end_time, u.username, i.status FROM events e JOIN invites i JOIN users u ON e.event_id = i.event_id and e.event_creator=u.user_id WHERE employee=?"
 						, [req.user.user_id], function(err, results) {
 			var user_events = [];
 			if (err)
@@ -93,7 +95,7 @@ module.exports = function(app, passport) {
 			}
 
 			var is_manager;
-			connection.query("SELECT * FROM " + dbconfig.database + ".users u JOIN "+ dbconfig.database +".managers m ON u.user_id=m.user_id AND u.dept=m.dept WHERE u.user_id=?", [req.user.user_id], function(err, result) {
+			connection.query("SELECT * FROM users u JOIN managers m ON u.user_id=m.user_id AND u.dept=m.dept WHERE u.user_id=?", [req.user.user_id], function(err, result) {
 				if (err)
 					return console.log(err);
 				if (result.length) {
@@ -115,7 +117,7 @@ module.exports = function(app, passport) {
 
 	// accept/decline to event invites within profile page
 	app.post('/profile', isLoggedIn, function(req, res) {
-		connection.query("UPDATE " + dbconfig.database + ".invites SET status=? WHERE event_id=? AND employee=?", [req.body.status, req.body.event_id, req.user.user_id], function(err, rows) {
+		connection.query("UPDATE invites SET status=? WHERE event_id=? AND employee=?", [req.body.status, req.body.event_id, req.user.user_id], function(err, rows) {
 			if (err){
 				res.redirect(500, '/profile');
 				console.log(err);
@@ -130,7 +132,7 @@ module.exports = function(app, passport) {
 	// set employee information
 	app.get('/profile/info', isLoggedIn, function(req, res) {
 
-		connection.query("SELECT name, title, dept FROM " + dbconfig.database + "." + "users WHERE user_id=?", [req.user.user_id], function(err, rows) {
+		connection.query("SELECT name, title, dept FROM users WHERE user_id=?", [req.user.user_id], function(err, rows) {
 			if (err)
 				return console.log(err);
 			if (rows.length) {
@@ -169,7 +171,7 @@ module.exports = function(app, passport) {
 	app.post('/profile/info', isLoggedIn, function(req, res){
 
 		// updates user info
-		connection.query("UPDATE " + dbconfig.database + "." + "users SET name=?, title=?, dept=? WHERE user_id=?",
+		connection.query("UPDATE users SET name=?, title=?, dept=? WHERE user_id=?",
 		[req.body.name, req.body.title, req.body.dept, req.user.user_id], function(err, result){
 				if (err)
 				return console.log(err);
@@ -196,7 +198,7 @@ module.exports = function(app, passport) {
 	app.get('/calendar', isLoggedIn, function (req, res) {
 
 		// populates a user's calendar with their events
-		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + ".invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.user.user_id], function(err, rows) {
+		connection.query("SELECT * FROM events e JOIN invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.user.user_id], function(err, rows) {
 
 			if (err)
 			return console.log(err);
@@ -237,18 +239,18 @@ module.exports = function(app, passport) {
 	app.post('/calendar/add', isLoggedIn, function(req, res){
 
 		// adds an event to a user's calendar
-		connection.query("INSERT INTO " + dbconfig.database + "." + "events (event_creator, event_owner, start_time, end_time, title, description, created_date) \
+		connection.query("INSERT INTO events (event_creator, event_owner, start_time, end_time, title, description, created_date) \
 		VALUES (?, ?, ?, ?, ?, ?, ?)", [req.user.user_id, req.user.user_id, moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss")], function(err, result) {
 				if (err)
 					return console.log(err);
 				else {
 					// adds to schedules table
-					connection.query("INSERT INTO " + dbconfig.database + "." + "schedules VALUES (LAST_INSERT_ID(),?)", [req.user.user_id], function(err, rows) {
+					connection.query("INSERT INTO schedules VALUES (LAST_INSERT_ID(),?)", [req.user.user_id], function(err, rows) {
 					    if (err)
 							return console.log(err);
 						else{
 							// adds an invite
-							connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
+							connection.query("INSERT INTO invites (event_id, employee, status) \
 							VALUES (LAST_INSERT_ID(), ?, ?)", [req.user.user_id, 1], function(err, result){
 									if (err)
 										return console.log(err);
@@ -267,7 +269,7 @@ module.exports = function(app, passport) {
 	app.post('/calendar/editevent', isLoggedIn, function(req, res){
 
 		// updates user info
-		connection.query("UPDATE " + dbconfig.database + "." + "events SET start_time=?, end_time=?, title=?, description=?, created_date=? WHERE event_id=?", [moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss"), req.body.event_id], function(err, result){
+		connection.query("UPDATE events SET start_time=?, end_time=?, title=?, description=?, created_date=? WHERE event_id=?", [moment(req.body.start_time).format("YYYY-MM-DD HH:mm:ss"), moment(req.body.end_time).format("YYYY-MM-DD HH:mm:ss"), req.body.title, req.body.description, moment().format("YYYY-MM-DD HH:mm:ss"), req.body.event_id], function(err, result){
 				if (err)
 				return console.log(err);
 				else{
@@ -282,7 +284,7 @@ module.exports = function(app, passport) {
 	app.post('/calendar/deleteevent', isLoggedIn, function(req, res){
 
 		// delete this event
-		connection.query("DELETE FROM " + dbconfig.database + "." + "events WHERE event_id=?",
+		connection.query("DELETE FROM events WHERE event_id=?",
 		[req.body.event_id], function(err, result){
 				if (err)
 				return console.log(err);
@@ -302,7 +304,7 @@ module.exports = function(app, passport) {
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
 		  	 // get all users to be able to invite any user
-		     connection.query("SELECT * FROM " + dbconfig.database + "." + "users u LEFT JOIN " + dbconfig.database + "." + "invites i ON u.user_id = i.employee AND i.event_id =? WHERE i.employee IS NULL", [event_id], function(err, rows) {
+		     connection.query("SELECT * FROM users u LEFT JOIN invites i ON u.user_id = i.employee AND i.event_id =? WHERE i.employee IS NULL", [event_id], function(err, rows) {
 		     	if (err)
 		     		return console.log(err);
 		     	if (rows.length) {
@@ -318,7 +320,7 @@ module.exports = function(app, passport) {
 		     		}
 
 		     		// get list of current invites to the event
-		     		connection.query("SELECT employee, status, name FROM " + dbconfig.database + "." + "invites i JOIN " + dbconfig.database + "." + "users u ON u.user_id = i.employee WHERE event_id=?", [event_id], function(err, rows){
+		     		connection.query("SELECT employee, status, name FROM invites i JOIN users u ON u.user_id = i.employee WHERE event_id=?", [event_id], function(err, rows){
 		     			if (err)
 				     		return console.log(err);
 				     	if (rows.length) {
@@ -335,7 +337,7 @@ module.exports = function(app, passport) {
 				     		}
 				     	}
 
-				     	connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_id=?", [event_id], function(err, rows){
+				     	connection.query("SELECT * FROM events WHERE event_id=?", [event_id], function(err, rows){
 				     		if (err)
 					     		return console.log(err);
 					     	if (rows.length) {
@@ -360,7 +362,7 @@ module.exports = function(app, passport) {
 	app.post('/calendar/invite/add', isLoggedIn, function(req, res){
 
 		// adds an invite to a given event
-		connection.query("INSERT INTO " + dbconfig.database + "." + "invites (event_id, employee, status) \
+		connection.query("INSERT INTO invites (event_id, employee, status) \
 		VALUES (?, ?, ?)", [req.body.event_id, req.body.user_id, 0], function(err, result) {
 			if (err){
 				res.redirect(500, '/calendar/invite?event_id='+req.body.event_id);
@@ -375,7 +377,7 @@ module.exports = function(app, passport) {
 	app.post('/calendar/invite/delete', isLoggedIn, function(req, res){
 
 		// deletes an invite
-		connection.query("DELETE FROM " + dbconfig.database + "." + "invites WHERE event_id=? AND employee=?",
+		connection.query("DELETE FROM invites WHERE event_id=? AND employee=?",
 		[req.body.event_id, req.body.user_id], function(err, result){
 				if (err){
 					res.redirect(500, '/calendar/invite?event_id='+req.body.event_id);
@@ -395,7 +397,7 @@ module.exports = function(app, passport) {
 		var manager_id = getParameterByName('manager_id', req.url);
 
 		// gets lists of subordinates
-		connection.query("SELECT u.user_id, u.name FROM " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "manages m WHERE \
+		connection.query("SELECT u.user_id, u.name FROM users u, manages m WHERE \
 						  m.user_id=u.user_id AND \
 						  m.manager_id=?", [manager_id], function(err, rows){
 			if (err){
@@ -421,10 +423,10 @@ module.exports = function(app, passport) {
 	});
 
 	app.post('/manager/aggregate', isLoggedIn, function(req, res) {
-		var deptHoursQuery = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from " + dbconfig.database + "." + "schedules s, " + dbconfig.database + "." + "users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, " + dbconfig.database + "." + "events e  where e.event_id = deptEvents.event_id) a;"
+		var deptHoursQuery = "select sum(hours) as deptHours from (select TIMESTAMPDIFF(hour, e.start_time, e.end_time) as hours from (select s.event_id from schedules s, users u where u.dept=? AND s.employee_id = u.user_id)deptEvents, events e  where e.event_id = deptEvents.event_id) a;"
 
 		// get dept from manager_id
-		connection.query("SELECT dept FROM " + dbconfig.database + "." + "managers where user_id=?", [req.body.manager_id], function(err, rows) {
+		connection.query("SELECT dept FROM managers where user_id=?", [req.body.manager_id], function(err, rows) {
 		    if (err){
 		    	console.log(err);
 		    }
@@ -432,7 +434,7 @@ module.exports = function(app, passport) {
 		    	var dept = rows[0].dept;
 
 		    	// gets subordinates who have decline events
-		    	var subDeclinesQuery = "select u.name, e.title, e.description from " + dbconfig.database + "." + "users u, " + dbconfig.database + "." + "events e, " + dbconfig.database + "." + "invites i where i.employee=u.user_id AND i.status=2 AND i.event_id=e.event_id AND u.dept=?";
+		    	var subDeclinesQuery = "select u.name, e.title, e.description from users u, events e, invites i where i.employee=u.user_id AND i.status=2 AND i.event_id=e.event_id AND u.dept=?";
 
 		    	connection.query(subDeclinesQuery, [dept], function(err, rows) {
 		    		if(err){
@@ -481,7 +483,7 @@ module.exports = function(app, passport) {
 	app.post('/manager/calendar', isLoggedIn, function(req, res) {
 
 	   // populates a calendar with the subordinate's events
-		connection.query("SELECT * FROM " + dbconfig.database + "." + "events e JOIN " + dbconfig.database + ".invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.body.user_id], function(err, rows) {
+		connection.query("SELECT * FROM events e JOIN invites i ON e.event_id=i.event_id WHERE employee=? AND status=1", [req.body.user_id], function(err, rows) {
 			if (err)
 			return console.log(err);
 			if (rows.length) {
