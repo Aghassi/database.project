@@ -302,7 +302,7 @@ module.exports = function(app, passport) {
 		var event_id = getParameterByName('event_id', req.url);
 		if (event_id) {
 		  	 // get all users to be able to invite any user
-		     connection.query("SELECT * FROM " + dbconfig.database + "." + "users u LEFT JOIN " + dbconfig.database + "." + "invites i ON u.user_id = i.employee WHERE i.employee IS NULL", function(err, rows) {
+		     connection.query("SELECT * FROM " + dbconfig.database + "." + "users u LEFT JOIN " + dbconfig.database + "." + "invites i ON u.user_id = i.employee WHERE i.employee IS NULL AND i.event_id = ?", [event_id], function(err, rows) {
 		     	if (err)
 		     		return console.log(err);
 		     	if (rows.length) {
