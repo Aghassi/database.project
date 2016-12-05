@@ -318,28 +318,21 @@ module.exports = function(app, passport) {
 		     		}
 
 		     		// get list of current invites to the event
-		     		connection.query("SELECT employee, status FROM " + dbconfig.database + "." + "invites WHERE event_id=?", [event_id], function(err, rows){
+		     		connection.query("SELECT employee, status, name FROM " + dbconfig.database + "." + "invites i JOIN " + dbconfig.database + "." + "users u ON u.user_id = i.employee WHERE event_id=?", [event_id], function(err, rows){
 		     			if (err)
 				     		return console.log(err);
 				     	if (rows.length) {
 				     		var invitesList = [];
-								var tempInvitesList = [];
 
 				     		for(var i = 0 ; i < rows.length ; i++){
 				     			var invite_info = {
+										name: rows[i].name,
 				     				employee : rows[i].employee,
 				     				status : rows[i].status
 				     			};
 
-									tempInvitesList.push(invite_info);
+									invitesList.push(invite_info);
 				     		}
-								
-								for(var j = 0 ; j < usersList.length ; j++){
-									if (tempInvitesList[j].employee === usersList[j].user_id) {
-										tempInvitesList[j].name = usersList[j].name;
-										invitesList.push(invite_info);
-									}
-								}
 				     	}
 
 				     	connection.query("SELECT * FROM " + dbconfig.database + "." + "events WHERE event_id=?", [event_id], function(err, rows){
