@@ -53,65 +53,87 @@ INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.users_table + '`\
 var hash = bcrypt.hashSync("aghassi", salt);
 connection.query('\
 INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.users_table + '`\
-          (user_id, name, title, dept, username, password)\
+          (`user_id`, `name`, `title`, `dept`, `username`, `password`)\
   VALUES  ("3", "David", "Student", "EECS", "aghassi", "' + hash + '")\
 ');
 
 var hash = bcrypt.hashSync("ryan", salt);
 connection.query('\
 INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.users_table + '`\
-          (user_id, name, title, dept, username, password)\
+          (`user_id`, `name`, `title`, `dept`, `username`, `password`)\
   VALUES  ("4", "Ryan", "Student", "EECS", "ryan", "' + hash + '")\
 ');
+
+console.log('Users created.');
+
 
 // add event Final exam
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.events_table + '`\
-          (event_id, event_creator, event_owner, start_time, end_time, title, description, created_date)\
+          (`event_id`, `event_creator`, `event_owner`, `start_time`, `end_time`, `title`, `description`, `created_date`)\
   VALUES  ("1", "1", "1", "2016-12-20 08:00:00", "2016-12-20 11:00:00", \
           "Final Exam", "Final Exam for EECS341", "2016-9-13 12:45:00")');
 
+// add event Group meeting
+connection.query('\
+  INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.events_table + '`\
+          (`event_id`, `event_creator`, `event_owner`, `start_time`, `end_time`, `title`, `description`, `created_date`)\
+  VALUES  ("2", "3", "3", "2016-12-19 14:00:00", "2016-12-19 17:00:00", \
+          "Group Meeting", "Group meeting", "2016-12-12 00:00:00")');
+
+console.log('Events created.');
+
+// schedules
+// TODO: Fix
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.schedules_table + '`\
-          (event_id, employee_id)\
+          (`event_id`, `employee_id`)\
   VALUES ("1", "1")\
 )');
 
+connection.query('\
+  INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.schedules_table + '`\
+          (`event_id`, `employee_id`)\
+  VALUES ("2", "3")\
+)');
+
+console.log('Schedules created.');
 
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.manages_table + '`\
-          (manager_id, user_id)\
+          (`manager_id`, `user_id`)\
   VALUES ("1", "2")\
 )');
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.manages_table + '`\
-          (manager_id, user_id)\
+          (`manager_id`, `user_id`)\
   VALUES ("1", "3")\
 )');
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.manages_table + '`\
-          (manager_id, user_id)\
+          (`manager_id`, `user_id`)\
   VALUES ("1", "4")\
 )');
 
+console.log('Manages created.');
 
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.invites_table + '`\
-          (event_id, employee, status)\
+          (`event_id`, `employee`, `status`)\
   VALUES ("1", "2", "0")\
 )');
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.invites_table + '`\
-          (event_id, employee, status)\
+          (`event_id`, `employee`, `status`)\
   VALUES ("1", "3", "0")\
 )');
 connection.query('\
   INSERT INTO `' + dbconfig.database + '`.`' + dbconfig.invites_table + '`\
-          (event_id, employee, status)\
+          (`event_id`, `employee`, `status`)\
   VALUES ("1", "4", "0")\
 )');
 
-
+console.log('Invites created.');
 
 console.log('Success: Database Populated!')
 
