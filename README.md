@@ -15,7 +15,7 @@ We will be using Passport to authenticate users locally,
 If you would like to download the code and try it for yourself:
 
 1. Clone the repo
-2. Install packages: `npm install`
+2. Install packages: `make install`
 3. Edit the database configuration: `config/database.js`
 4. Create the database schema: `make database`
 	- Create dummy data (currently alpha): `make data`
